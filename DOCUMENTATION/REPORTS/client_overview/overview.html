@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>SPM-420 Project Overview</title>
+<title>SPM-420 Project Overview · NULL-TECH</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
 <style>
 /* Print layout: A4 engineering report. Petrol accent for structure, amber only for warnings. */
@@ -51,11 +51,15 @@ thead{display:table-header-group}
 /* cover */
 .cover{height:257mm;display:grid;grid-template-rows:auto 1fr auto;gap:6mm}
 .cover .top{border-top:3px solid var(--accent);padding-top:5mm}
+.brand{display:flex;align-items:baseline;gap:3mm;margin-bottom:7mm}
+.brand .mark{font:600 15pt/1 var(--f-display);letter-spacing:.14em;color:var(--ink)}
+.brand .mark i{font-style:normal;color:var(--accent);margin:0 .6mm}
+.brand span:last-child{font:500 7.6pt/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .cover h1{font-size:30pt;line-height:1.05;margin:2mm 0 3mm}
 .cover .sub{font-size:12pt;color:var(--muted);max-width:150mm}
 .cover figure{align-self:center;margin:0}
 .cover figure img{border:0}
-.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.meta{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .meta div{padding:3mm 3mm 3mm 0}
 .meta dt{font:500 7pt/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5mm}
 .meta dd{margin:0;font-weight:500}
@@ -87,6 +91,7 @@ thead{display:table-header-group}
 <!-- ============================ COVER ============================ -->
 <section class="cover">
   <div class="top">
+    <div class="brand"><span class="mark">NULL<i>/</i>TECH</span><span>Engineering Studio</span></div>
     <div class="eyebrow">Project overview and scope of supply</div>
     <h1>SPM-420 Automatic Snack Filling and Packaging Line</h1>
     <p class="sub">Multihead weigher with a vertical form-fill-seal bagger for potato chips, crispy snacks, crackers and small biscuits</p>
@@ -94,6 +99,7 @@ thead{display:table-header-group}
   <figure><img src="../../../CAD/ASSEMBLY/SPM-420_isometric.png" alt="Isometric views of the SPM-420 line"></figure>
   <div>
     <dl class="meta">
+      <div><dt>Prepared by</dt><dd>NULL-TECH Engineering Studio</dd></div>
       <div><dt>Document</dt><dd>Project overview</dd></div>
       <div><dt>Revision</dt><dd>P1, preliminary</dd></div>
       <div><dt>Date</dt><dd>11 November 2026</dd></div>

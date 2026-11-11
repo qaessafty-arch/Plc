@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPM-420 · NULL-TECH</title>
+<meta name="description" content="Interactive 3D model and project overview of the SPM-420 automatic snack filling and packaging line, by NULL-TECH Engineering Studio. Preliminary design.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three/three.module.js",
+  "three/addons/": "./vendor/three/addons/"
+} }
+</script>
+</head>
+<body>
+<header class="bar">
+  <a class="mark" href="#top" aria-label="NULL-TECH home">NULL<i>/</i>TECH</a>
+  <span class="studio">Engineering Studio</span>
+  <nav aria-label="Sections">
+    <a href="#model">3D model</a><a href="#how">How it works</a><a href="#layout">Layout</a><a href="#status">Status</a><a href="#files">Files</a>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="intro wrap">
+    <p class="eyebrow">Project SPM-420 · rev P1 · preliminary design</p>
+    <h1>Automatic snack filling and packaging line</h1>
+    <p class="lede">A 10-head multihead weigher feeding a vertical form-fill-seal bagger, for potato chips, crispy snacks, crackers and small biscuits. Rotate, explode and inspect every assembly below.</p>
+  </section>
+
+  <section id="model" class="viewer" aria-label="Interactive 3D model">
+    <div class="stage">
+      <canvas id="c" aria-label="3D model of the SPM-420 line. Drag to rotate, scroll or pinch to zoom, click a part for details."></canvas>
+      <div class="loading" id="loading" role="status">Loading model…</div>
+      <div class="views" role="group" aria-label="Camera views">
+        <button type="button" data-view="iso" class="on">Iso</button>
+        <button type="button" data-view="front">Front</button>
+        <button type="button" data-view="side">Side</button>
+        <button type="button" data-view="top">Top</button>
+        <button type="button" data-view="bagger">Bagger</button>
+      </div>
+      <div class="dims" id="dims" aria-live="polite"></div>
+      <p class="hint">Drag to rotate · right-drag to pan · scroll to zoom · click a part</p>
+    </div>
+    <aside class="panel">
+      <div class="block">
+        <label for="explode" class="lbl">Explode <span id="exv" class="mono">0 %</span></label>
+        <input id="explode" type="range" min="0" max="100" value="0">
+        <div class="toggles">
+          <label><input type="checkbox" id="ghost"> See-through guards</label>
+          <label><input type="checkbox" id="spin"> Auto-rotate</label>
+          <label><input type="checkbox" id="floor" checked> Floor grid (1 m)</label>
+        </div>
+      </div>
+      <div class="block info" id="info">
+        <p class="lbl">Selected part</p>
+        <p class="none" id="infoNone">Click a part in the model or the list.</p>
+        <div id="infoBody" hidden>
+          <h3 id="iName"></h3>
+          <dl>
+            <div><dt>Group</dt><dd id="iGroup"></dd></div>
+            <div><dt>Material</dt><dd id="iMat"></dd></div>
+            <div><dt>Envelope X×Y×Z</dt><dd id="iBox" class="mono"></dd></div>
+            <div><dt>Est. mass</dt><dd id="iMass" class="mono"></dd></div>
+            <div><dt>Part ID</dt><dd id="iId" class="mono"></dd></div>
+          </dl>
+          <button type="button" id="isolate">Isolate</button> <button type="button" id="showall">Show all</button>
+        </div>
+      </div>
+      <div class="block parts">
+        <p class="lbl">Parts <span class="muted">(click to select, tick to show)</span></p>
+        <ul id="plist"></ul>
+      </div>
+    </aside>
+  </section>
+
+  <section class="wrap kf" aria-label="Key figures">
+    <div><b>4450 × 1900 × 3900</b><span>line L × W × H, mm</span></div>
+    <div><b>6050 × 4100 mm</b><span>floor with access zones; 4400 mm clear height</span></div>
+    <div><b>40 bags/min</b><span>rated, 40 g chips, 160 × 230 mm bag (calculated)</span></div>
+    <div><b>80–200 × 80–300</b><span>bag width × length, mm; film web ≤ 420 mm</span></div>
+    <div><b>4.7 kW · 0.19 m³/min</b><span>connected load 400/230 V · air at 0.6 MPa</span></div>
+    <div><b>≈ 56,000 USD</b><span>semi-industrial estimate ±30 % · ≈ 73.8 M IQD</span></div>
+  </section>
+
+  <section id="how" class="wrap">
+    <h2>How one bag is made</h2>
+    <p class="sub">One 1.5 s cycle for the reference recipe. Times come from the simulation of the PLC program, not from a machine.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Step</th><th>Phase</th><th>Time, s</th><th>What happens</th><th>Controlled by</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">10</td><td>Dump request</td><td class="mono">−0.056</td><td>The PLC tells the weigher to drop the next charge, just before the film pull. It needs about 0.70 s to fall.</td><td>PLC, weigher</td></tr>
+        <tr><td class="mono">20</td><td>Pull film</td><td class="mono">0.000–0.422</td><td>Belts pull 230 mm of film down over the forming tube.</td><td>Servo drive</td></tr>
+        <tr><td class="mono">30</td><td>Settle</td><td class="mono">0.422–0.474</td><td>Short pause so the film is still.</td><td>PLC timer</td></tr>
+        <tr><td class="mono">40</td><td>Close jaws</td><td class="mono">0.474–0.596</td><td>Horizontal jaws and vertical seal bar close.</td><td>PLC, valves</td></tr>
+        <tr><td class="mono">50</td><td>Seal and cut</td><td class="mono">0.596–1.048</td><td>Two seals at once; knife cuts at 0.798 s. The new charge lands on the closed jaws, 0.646–0.996 s.</td><td>PLC timer</td></tr>
+        <tr><td class="mono">60</td><td>Open jaws</td><td class="mono">1.048–1.170</td><td>Jaws retract; the finished bag is on the conveyor.</td><td>Spring-return valves</td></tr>
+        <tr><td class="mono">10</td><td>Wait</td><td class="mono">1.172–1.504</td><td>Hold until the next cycle is due and the weigher is ready.</td><td>PLC pacing</td></tr>
+      </tbody>
+    </table></div>
+    <figure><img src="img/timing_diagram_simulated.png" alt="Simulated timing diagram of three bagger cycles" loading="lazy"><figcaption>Simulated timing of three cycles.</figcaption></figure>
+  </section>
+
+  <section id="layout" class="wrap">
+    <h2>Layout and floor space</h2>
+    <div class="two">
+      <figure><a href="img/GA-001_general_arrangement.png" target="_blank" rel="noopener"><img src="img/GA-001_general_arrangement.png" alt="General arrangement drawing GA-001" loading="lazy"></a><figcaption>GA-001 General arrangement, dimensioned. Opens full size.</figcaption></figure>
+      <figure><a href="img/GA-002_floor_layout.png" target="_blank" rel="noopener"><img src="img/GA-002_floor_layout.png" alt="Floor layout drawing GA-002" loading="lazy"></a><figcaption>GA-002 Floor layout with access zones and emergency stops.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="status" class="wrap">
+    <h2>Where the project stands</h2>
+    <div class="two">
+      <div class="card">
+        <h3>Done and checked</h3>
+        <ul>
+          <li>Calculations, layout, 3D model (22 parts), drawings</li>
+          <li>Electrical design, bill of materials (77 lines), budget in USD and IQD</li>
+          <li>Siemens S7-1200 program and HMI design, tested in simulation: 12 scenarios, 51 checks pass</li>
+          <li>Monitoring software, manufacturing, safety and test documentation</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h3>Not yet done</h3>
+        <ul>
+          <li>Nothing has been built, compiled on a real controller or measured</li>
+          <li>Drawings are layout level, not released for manufacture</li>
+          <li>Weigher and elevator are shown as supplier envelopes</li>
+          <li>Safety must be validated on the built machine by a qualified assessor</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="files" class="wrap">
+    <h2>Files</h2>
+    <ul class="files">
+      <li><a href="downloads/SPM-420_Project_Overview.pdf">Project overview (PDF, 14 pages)</a><span>Scope, verification, what the project must supply, budget, next steps</span></li>
+      <li><a href="downloads/CD-000_component_drawings.pdf">Component sheets (PDF, 22 pages)</a><span>Three views and envelope dimensions per part</span></li>
+      <li><a href="downloads/SPM-420_assembly.step">3D assembly (STEP)</a><span>Opens in SolidWorks, Inventor, Fusion, FreeCAD</span></li>
+      <li><a href="model/spm420.glb">3D assembly (GLB)</a><span>For web viewers, Blender, AR</span></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <span class="mark small">NULL<i>/</i>TECH</span>
+  <p>SPM-420 rev P1. Preliminary design checked by calculation and simulation only. All performance figures are calculated or simulated. Not released for manufacture.</p>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
