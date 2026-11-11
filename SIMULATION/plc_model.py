@@ -19,7 +19,7 @@ class Recipe:
     TempBand: float = 8.0
     KnifeDelay_ms: int = 200
     KnifeTime_ms: int = 100
-    DumpAdvance_ms: int = 0
+    DumpLead_ms: int = 55
     SettleTime_ms: int = 50
     SpeedSet_bpm: float = 40.0
     UseRegMark: bool = False
@@ -79,14 +79,16 @@ class BagCycle:
         self.qJawClose = self.qVSeal = self.qKnife = self.qDumpRequest = self.qPullExecute = False
         self.Waiting = self.BagDone = self.EmptyDone = False
         self.ToJawClose = self.ToJawOpen = self.ToVSeal = self.ToKnife = self.BagJam = False
-        self.charged = self.dumpPending = self.bagExpected = self.singleLatch = False
+        self.charged = self.dumpIssued = self.bagExpected = self.singleLatch = False
         self.missedBags = 0; self.CycleTime_ms = 0
-        self.dumpTimer = TON(); self.dumpPulseT = 0.0; self.dumpOld = False
+        self.dumpCmd = False; self.dumpAt = 0.0; self.dumpPulseT = 0.0
 
     def __call__(self, dt, r: Recipe, Run, SingleCycle, NoProduct, Abort, CycleStop, Reset, TempsInBand,
                  FilmPresent, AirOk, WeigherReady, JawClosed, JawOpen, VSealBack, KnifeHome, PullDone,
                  PullError, BagOutEdge):
         self.BagDone = self.EmptyDone = False
+        self.dumpCmd = False
+        period = 60.0 / max(r.SpeedSet_bpm, 1.0)
         self.ToJawClose = self.ToJawOpen = self.ToVSeal = self.ToKnife = self.BagJam = False
         if SingleCycle:
             self.singleLatch = True
@@ -101,13 +103,23 @@ class BagCycle:
             if (Run or self.singleLatch) and not CycleStop:
                 self.Step = 10
         elif s == 10:
-            self.Waiting = not (TempsInBand and (WeigherReady or NoProduct or not Run))
-            if CycleStop or not (Run or self.singleLatch):
+            ready = TempsInBand and FilmPresent and AirOk and JawOpen and VSealBack and KnifeHome
+            want = ((Run and not CycleStop) or self.singleLatch) and not NoProduct
+            if self.dumpIssued:
+                self.Waiting = False
+                if self.tCycle >= max(period, self.dumpAt + r.DumpLead_ms / 1000) - 1e-9:
+                    self.Step = 20
+            elif CycleStop or not (Run or self.singleLatch):
+                self.Waiting = False
                 self.Step = 20 if (self.charged and TempsInBand and FilmPresent and AirOk) else 0
-            elif (TempsInBand and FilmPresent and AirOk and JawOpen and VSealBack and KnifeHome
-                  and (WeigherReady or NoProduct)
-                  and (self.tCycle >= 60.0 / r.SpeedSet_bpm - 1e-9 or self.singleLatch)):
-                self.Step = 20
+            elif want:
+                self.Waiting = not (TempsInBand and WeigherReady)
+                if ready and WeigherReady and (self.tCycle + r.DumpLead_ms / 1000 >= period - 1e-9 or self.singleLatch):
+                    self.dumpIssued = True; self.dumpCmd = True; self.dumpAt = self.tCycle
+            else:
+                self.Waiting = not TempsInBand
+                if ready and (self.tCycle >= period - 1e-9 or self.singleLatch):
+                    self.Step = 20
         elif s == 20:
             self.Waiting = False; self.qPullExecute = True
             if PullError:
@@ -116,8 +128,6 @@ class BagCycle:
                 self.qPullExecute = False; self.Step = 30
         elif s == 30:
             if et >= r.SettleTime_ms / 1000:
-                self.dumpPending = ((Run and not CycleStop and not NoProduct and WeigherReady)
-                                    or (self.singleLatch and not NoProduct and WeigherReady))
                 self.Step = 40
         elif s == 40:
             self.qJawClose = True; self.qVSeal = True
@@ -143,25 +153,24 @@ class BagCycle:
                 self.missedBags += 1
             self.bagExpected = True
             self.BagJam = self.missedBags >= 2
-            self.charged = self.dumpPending; self.dumpPending = False
-            self.CycleTime_ms = int(self.tCycle * 1000)
+            self.charged = self.dumpIssued; self.dumpIssued = False
             self.singleLatch = False
             self.Step = 900 if self.BagJam else 10
         elif s == 900:
             self.qJawClose = self.qVSeal = self.qKnife = self.qPullExecute = False
-            self.dumpPending = self.singleLatch = self.Waiting = False
+            self.dumpIssued = self.singleLatch = self.Waiting = False
             if Reset and not Abort:
                 self.missedBags = 0; self.bagExpected = False; self.charged = False
                 self.Step = 0
-        # dump pulse (TP 100 ms) DumpAdvance after the jaw-close command
-        q = self.dumpTimer(self.Step in (40, 50), r.DumpAdvance_ms / 1000, dt) and self.dumpPending
-        if q and not self.dumpOld:
+        # dump pulse (TP 100 ms) from the one-scan command; lead timer request -> pull
+        if self.dumpCmd:
             self.dumpPulseT = 0.1
-        self.dumpOld = q
         self.qDumpRequest = self.dumpPulseT > 0
         self.dumpPulseT = max(0.0, self.dumpPulseT - dt)
         # timers
         self.tStep = self.tStep + dt if self.Step == self.stepOld else 0.0
+        if self.Step == 20 and self.stepOld != 20:
+            self.CycleTime_ms = int(round(self.tCycle * 1000))       # pull start to pull start
         self.tCycle = 0.0 if (self.Step == 20 and self.stepOld != 20) else self.tCycle + dt
         self.stepOld = self.Step
 

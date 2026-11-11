@@ -18,7 +18,7 @@ Revision P1, 2026-11-11. Status of the project: **design package at preliminary-
 | 10 | PLC program | `AUTOMATION/PLC/*.scl, *.udt, *.db` | Structured Text source, **not compiled in TIA Portal** |
 | 11 | HMI application | `AUTOMATION/HMI/` specification, tag CSV, browser prototype | WinCC project must be built from the spec |
 | 12 | Monitoring software | `SOFTWARE/` FastAPI + PostgreSQL schema + React | runs; tested with simulated source; OPC UA path untested on a PLC |
-| 13 | Simulation | `SIMULATION/` | 12 scenarios / 49 checks pass; weigher Monte-Carlo |
+| 13 | Simulation | `SIMULATION/` | 12 scenarios / 51 checks pass; weigher Monte-Carlo |
 | 14 | Manufacturing guide | `DOCUMENTATION/MANUFACTURING/manufacturing_guide.md` | process, tolerances, tools |
 | 15 | Assembly instructions | `DOCUMENTATION/MANUFACTURING/assembly_instructions.md` | sequence, threading, format change |
 | 16 | Safety documentation | `DOCUMENTATION/SAFETY/` | preliminary risk assessment, standards list, LOTO, cleaning |
@@ -43,7 +43,7 @@ Line: floor hopper with vibratory tray -> Z-bucket elevator -> 10-head combinati
 2. **The bagger cannot detect weight errors** (simulation S05). Weight assurance rests on the weigher and, for anything sold by weight, on a checkweigher.
 3. **Speed is capped by pneumatic jaws** at about 49 bags/min for this bag; the 80-150 bags/min of the reference manufacturer's high-speed model requires servo jaws and continuous film motion.
 4. **Combination weighing needs charge variety**: the model shows more failed combinations when per-head charges are very uniform, and a 4-head weigher is unusable for 40 g chips (4.7 % give-away, ~70 % skipped cycles).
-5. **Simulation found three real sequence defects** before any hardware: a hang in STOPPING after a cycle abort, alarms needing two resets, and the recipe speed not being enforced. All fixed in both the SCL and the model.
+5. **Simulation found five real sequence defects** before any hardware: a hang in STOPPING after a cycle abort, alarms needing two resets, the recipe speed not being enforced, the weigher dump being sent so late that the charge landed after the jaws had opened, and a wrong speed figure reported by the PLC. All fixed in both the SCL and the model. The dump timing now has a tuning window of only about ±45 ms around 55 ms (model values); it must be set from high-speed video per product.
 6. **Cabinet temperature margin is thin** for unconditioned halls in Iraq (≈ 45 °C inside at 35 °C ambient): a filter fan or cooler is specified.
 7. Film is ~98 % of the energy-plus-film running cost; bag length matters more than any energy measure.
 
@@ -56,7 +56,7 @@ Line: floor hopper with vibratory tray -> Z-bucket elevator -> 10-head combinati
 | A3 | Bulk densities of products | bag sizes, elevator | measure each product |
 | A4 | Film: 50 µm PP-based laminate, seal 150 °C / 0.45 s / 0.4 MPa | cycle, heaters, jaw force | film supplier data sheet + seal trials (T-SEAL-01) |
 | A5 | Film drag 60 N, belt friction allows 6 m/s² | servo sizing, cycle | spring-scale measurement; pull trials |
-| A6 | Product string duration 0.35 s, fall without drag | timing | high-speed video per product |
+| A6 | Product string duration 0.35 s, fall without drag | timing, dump lead (55 ms) | high-speed video per product |
 | A7 | Per-head charge CV 30 %, cell noise 0.15 g | weight statistics | weigher supplier trials with the real product |
 | A8 | Weigher 1100 dia x 1250, 380 kg, 1.5 kW, 70 wpm; elevator section and head height | layout, loads, footprint | supplier certified drawings and data |
 | A9 | Pneumatic travel 0.12-0.15 s, knife force 150 N | cycle | measurement |

@@ -63,7 +63,7 @@ The calculation sheet shows the Ø63 jaw cylinder delivers 1683 N against a requ
 | Weigher | dimpled plates, low feeder amplitude with longer feed time, soft-close gates, staggered dump (5-20 ms between heads) to lengthen the charge and avoid bridging in the tube |
 | Collating chute and funnel | >= 60° walls, no steps; funnel overlaps tube |
 | Fill tube | the 1.9 m fall is unavoidable; product lands on film supported by the closed jaws; larger tube than strictly needed is preferred (tube ID >= 1.5 x largest piece) |
-| Jaws | product-in-seal is prevented by timing (dump advance per recipe) and by an optional stripper/"bag tapper" above the jaws; no mechanical stager for chips |
+| Jaws | product-in-seal is prevented by timing: the dump is requested before the film pull (recipe value "dump lead") so the charge lands on the closed jaws and by an optional stripper/"bag tapper" above the jaws; no mechanical stager for chips |
 | Take-off | bag falls <= 300 mm onto an inclined soft belt |
 
 ## 5. Maintenance access and adjustability

@@ -63,7 +63,7 @@ Machine no.: ________  Date: ________  Commissioning engineer: ________  Custome
 ## G. With product
 
 - [ ] Weigher calibrated and product program tuned by the weigher supplier's procedure
-- [ ] Fall time measured (video): lead ____ s, tail ____ s -> dump advance set ____ ms, margin >= 0.1 s
+- [ ] Fall time measured (video): first piece ____ s, last piece ____ s after the dump request -> dump lead set ____ ms; whole charge lands with jaws closed, >= 40 ms margin at both ends
 - [ ] Seal development test T-SEAL-01 done for each film
 - [ ] PQ runs per `test_plan.md` section 4; results attached
 - [ ] Operators trained (start/stop, threading, format change, cleaning, alarms, E-stop); manual handed over

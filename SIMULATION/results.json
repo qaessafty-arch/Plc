@@ -5,8 +5,9 @@
    "bags_plc": 78,
    "bags_plant_filled": 78,
    "empty_plc": 1,
-   "mean_period_s": 1.502,
+   "mean_period_s": 1.504,
    "speed_bpm": 39.9,
+   "plc_reported_speed_bpm": 39.9,
    "weights": {
     "n": 78,
     "mean": 40.41,
@@ -20,6 +21,8 @@
     230.0
    ],
    "product_in_seal_events": 0,
+   "pieces_landed_jaws_closed": 948,
+   "pieces_landed_jaws_open": 0,
    "alarms": [],
    "state": 3
   },
@@ -33,11 +36,19 @@
     true
    ],
    [
+    "every piece lands while the jaws are closed and support the new seal",
+    true
+   ],
+   [
     "all filled bags within +/-10 % of target",
     true
    ],
    [
     "speed is paced to the 40 bags/min recipe value (+/-0.5)",
+    true
+   ],
+   [
+    "speed reported by the PLC matches the real speed (+/-0.5)",
     true
    ],
    [
@@ -125,7 +136,7 @@
    "jaws_open": true,
    "state_after_reset": 0,
    "bags": 14,
-   "charged_open_bag": false
+   "charged_open_bag": true
   },
   "checks": [
    [
@@ -304,7 +315,7 @@
    ],
    "state_after_restart": 0,
    "bags_made_without_start": 0,
-   "jaws_open": true,
+   "jaws_open": false,
    "bags_before_start_pressed": 0,
    "bags_after_restart": 10
   },
