@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { createSim } from "./sim.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("c");
@@ -63,9 +64,10 @@ document.querySelectorAll(".views button").forEach((b) => b.addEventListener("cl
 $("c").addEventListener("dblclick", () => setView("iso"));
 
 // ---------- load ----------
-const [gltf, data] = await Promise.all([
+const [gltf, data, cyc] = await Promise.all([
   new GLTFLoader().loadAsync("model/spm420.glb", (e) => { if (e.total) $("loading").textContent = `Loading model… ${Math.round((100 * e.loaded) / e.total)} %`; }),
   fetch("model/parts.json").then((r) => r.json()),
+  fetch("model/cycle.json").then((r) => r.json()),
 ]).catch((err) => { $("loading").textContent = "The model could not be loaded. Reload the page to try again."; throw err; });
 
 const model = gltf.scene;
@@ -173,8 +175,24 @@ $("spin").addEventListener("change", (e) => { controls.autoRotate = e.target.che
 $("floor").addEventListener("change", (e) => { grid.visible = e.target.checked; });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") select(null); });
 
+// ---------- process simulation ----------
+const sim = createSim({ parts, cyc, ui: { step: $("sStep"), time: $("sTime"), bags: $("sBags"), rate: $("sRate"), jaw: $("sJaw") } });
+function simButtons() { $("simPlay").textContent = sim.running ? "Pause" : "Run"; $("explode").disabled = sim.active; }
+$("simPlay").addEventListener("click", () => {
+  if (sim.running) sim.pause();
+  else {
+    if (!sim.active) { $("explode").value = 0; $("explode").dispatchEvent(new Event("input")); for (const [id, p] of parts) { p.node.visible = true; $("v_" + id).checked = true; } select(null); }
+    sim.start();
+  }
+  simButtons();
+});
+$("simReset").addEventListener("click", () => { sim.reset(); simButtons(); });
+$("simSpeed").addEventListener("change", (e) => sim.setSpeed(parseFloat(e.target.value)));
+
 // ---------- loop ----------
+let lastT = performance.now();
 function frame() {
+  const now = performance.now(); sim.update(Math.min(0.05, (now - lastT) / 1000)); lastT = now;
   if (tween) {
     tween.k = Math.min(1, tween.k + 0.06);
     const s = tween.k * tween.k * (3 - 2 * tween.k);
