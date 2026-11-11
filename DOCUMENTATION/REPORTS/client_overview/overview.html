@@ -64,6 +64,7 @@ thead{display:table-header-group}
 .meta dt{font:500 7pt/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5mm}
 .meta dd{margin:0;font-weight:500}
 .status{margin-top:4mm}
+.live{font:500 9.5pt/1.3 var(--f-mono);color:var(--accent);margin:0 0 3mm}
 
 /* key figures */
 .kf{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);margin:2mm 0 5mm}
@@ -83,6 +84,9 @@ thead{display:table-header-group}
 
 .toc{columns:3;column-gap:8mm;font-size:8.6pt;margin:1mm 0 0;padding-left:4.5mm}
 .toc li{margin:0 0 .6mm}
+.story{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm 4mm;margin:1mm 0 3mm}
+.story figure{margin:0}
+.story img{aspect-ratio:16/10;object-fit:cover;object-position:50% 62%}
 .toc li{break-inside:avoid}
 </style>
 </head>
@@ -98,6 +102,7 @@ thead{display:table-header-group}
   </div>
   <figure><img src="../../../CAD/ASSEMBLY/SPM-420_isometric.png" alt="Isometric views of the SPM-420 line"></figure>
   <div>
+    <p class="live">Interactive 3D model and simulation: <b>spm-420.vercel.app</b></p>
     <dl class="meta">
       <div><dt>Prepared by</dt><dd>NULL-TECH Engineering Studio</dd></div>
       <div><dt>Document</dt><dd>Project overview</dd></div>
@@ -114,7 +119,7 @@ thead{display:table-header-group}
   <div class="eyebrow">Contents</div>
   <ol class="toc">
     <li>Summary</li>
-    <li>How the machine works</li>
+    <li>How the machine works, with the 3D simulation</li>
     <li>Layout and dimensions</li>
     <li>What the design package contains</li>
     <li>What has been verified, and how</li>
@@ -182,6 +187,29 @@ thead{display:table-header-group}
   <div class="callout"><b class="t">Safety is independent of the software</b>Emergency stop, guard-door interlocks, the servo's safe torque off and the heater over-temperature cut-out act directly on the valves, drive and contactors. The PLC only reports their state and cannot override them. There is no bypass function.</div>
 </section>
 
+<!-- ============================ 3D SIMULATION ============================ -->
+<section class="sec">
+  <h2>See it run: the 3D simulation</h2>
+  <p class="lead">The line can be watched working on an interactive 3D model at <b>spm-420.vercel.app</b>. Press <b>Run</b> in the Simulation box. No login or software is needed.</p>
+  <figure style="width:66%;margin-left:auto;margin-right:auto"><img src="img/sim_overview.png" alt="3D simulation overview: buckets rising in the elevator and bags leaving on the conveyor"><figcaption>The whole line during the simulation. Buckets carry product up the elevator; the selected weigher heads light up blue; finished bags leave on the take-off conveyor. The elevator, weigher and guards are shown see-through while it runs.</figcaption></figure>
+  <div class="story">
+    <figure><img src="img/sim_pull.png" alt="Film pull"><figcaption><b>1. Pull film</b> (0.15 s). Jaws open; the filled bag moves down below the jaws while the next charge falls.</figcaption></figure>
+    <figure><img src="img/sim_close.png" alt="Jaws closing"><figcaption><b>2. Close jaws</b> (0.50 s). The jaws and the vertical seal bar close on the film.</figcaption></figure>
+    <figure><img src="img/sim_seal.png" alt="Seal and cut"><figcaption><b>3. Seal and cut</b> (0.87 s). Two seals are made, the knife cuts, and the bag is released.</figcaption></figure>
+    <figure><img src="img/sim_discharge.png" alt="Bag discharge"><figcaption><b>4. Discharge</b> (1.30 s). Jaws open; the bag rides up the conveyor; the next dump is about to be requested.</figcaption></figure>
+  </div>
+  <table class="keep">
+    <thead><tr><th style="width:26%">On the page</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>Run / Pause / Reset, speed</td><td>Plays the process at 0.25×, 0.5× or real time. A readout shows the PLC step, cycle time, jaw state, bags made and rate (39.9 bags/min).</td></tr>
+      <tr><td>View buttons</td><td>Iso, front, side, top, and a close-up of the bagger. Drag to rotate, scroll to zoom.</td></tr>
+      <tr><td>Explode slider, part list</td><td>Pulls the sub-assemblies apart; shows, hides or isolates each part; clicking a part shows its material, size and estimated mass.</td></tr>
+      <tr><td>Downloads</td><td>This overview, the component sheets, and the 3D model as STEP and GLB.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn"><b class="t">What the simulation is</b>The movements of the jaws, seal bar and film replay the simulation of the PLC program. The buckets, falling chips and bags are illustrative and follow the same timing. It shows how the design is intended to work; it is not a recording or a measurement of a machine.</div>
+</section>
+
 <!-- ============================ LAYOUT ============================ -->
 <section class="sec">
   <h2>3. Layout and dimensions</h2>
@@ -225,6 +253,7 @@ thead{display:table-header-group}
       <tr><td>Monitoring software</td><td>Production statistics, batch records, alarm history, maintenance tracking; read-only towards the PLC</td><td>Python, React, PostgreSQL, Docker</td><td><span class="tag t-done">Runs</span></td></tr>
       <tr><td>Weigher algorithm</td><td>Combination-weighing routine for a self-built prototype weigher</td><td>C source + tests</td><td><span class="tag t-done">Tested on PC</span></td></tr>
       <tr><td>Simulation</td><td>PLC logic against a machine model, 12 scenarios including faults; weigher statistics</td><td>Python, results</td><td><span class="tag t-done">Complete</span></td></tr>
+      <tr><td>3D website with simulation</td><td>Interactive model with a running process simulation, part data, drawings and downloads at spm-420.vercel.app</td><td>Website, GLB</td><td><span class="tag t-done">Live</span></td></tr>
       <tr><td>Manufacturing and assembly guide</td><td>Fabrication, tolerances, tools, assembly sequence, film threading, format change, wear parts</td><td>Documents</td><td><span class="tag t-done">Complete</span></td></tr>
       <tr><td>Safety documentation</td><td>Standards list, preliminary risk assessment, lockout and cleaning procedures</td><td>Documents</td><td><span class="tag t-no">Draft</span></td></tr>
       <tr><td>Testing and calibration</td><td>Test plan with acceptance criteria, commissioning checklist, calibration procedures</td><td>Documents</td><td><span class="tag t-done">Complete</span></td></tr>
