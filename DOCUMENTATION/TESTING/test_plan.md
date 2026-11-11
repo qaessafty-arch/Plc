@@ -4,7 +4,7 @@
 
 | Evidence | Tool | Result | What it does NOT show |
 |---|---|---|---|
-| Sequence logic vs plant model, 12 scenarios, 49 checks | `SIMULATION/run_simulation.py`, `pytest SIMULATION` | all pass (`SIMULATION/RESULTS.md`) | correctness of the SCL text, real actuator times, real thermal behaviour, film behaviour |
+| Sequence logic vs plant model, 12 scenarios, 51 checks | `SIMULATION/run_simulation.py`, `pytest SIMULATION` | all pass (`SIMULATION/RESULTS.md`) | correctness of the SCL text, real actuator times, real thermal behaviour, film behaviour |
 | Combination weighing statistics | `SIMULATION/weigher_sim.py` | `weigher_results.json` | real charge distribution, real load-cell dynamics |
 | Combination algorithm (C) | gcc host test, 20 000 random cases vs brute force | pass | behaviour on a microcontroller |
 | Monitoring backend | 8 pytest API tests (SQLite) + live smoke test with simulated source | pass | PostgreSQL in production, OPC UA against a real CPU |
@@ -12,7 +12,7 @@
 | HMI prototype | browser run through login, all screens, start, E-stop, reset | pass | the real WinCC project |
 | CAD | model regenerates, bounding box equals calculated envelope 4450 x 1900 x 3900 | pass | interference check at detail level, manufacturability |
 
-Three sequence defects were found and fixed through simulation before any hardware existed (STOPPING could hang after a cycle abort; alarms needed two RESET presses; recipe speed was not enforced). This is the purpose of the model; it is not proof that no defects remain.
+Five sequence defects were found and fixed through simulation before any hardware existed: STOPPING could hang after a cycle abort; alarms needed two RESET presses; recipe speed was not enforced; the weigher dump was sent too late, so the charge landed after the jaws had opened, on an unsupported hot seal; and the speed reported by the PLC was measured over part of the cycle (51.3 shown at a real 40 bags/min). This is the purpose of the model; it is not proof that no defects remain.
 
 ## 2. Simulation coverage requested by the brief
 

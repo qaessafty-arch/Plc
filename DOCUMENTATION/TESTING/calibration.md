@@ -11,7 +11,7 @@
 | C7 | Jaw parallelism / pressure | carbon or pressure-indicating film | print at operating pressure, even density | - | after jaw service |
 | C8 | Weigher | certified weights (OIML class M1 or better) | supplier procedure: zero, span per head, then 20 dumps checked on a reference scale | weigher specification / legal metrology | 30 days check, yearly verification |
 | C9 | Reference bench scale for sampling | certified weights | daily check with one weight near the bag weight | ± 0.1 g | daily |
-| C10 | Dump advance | high-speed video (phone 240 fps is sufficient) | film the bag bottom above the jaws; measure lead and tail arrival relative to jaw close; set advance so the tail arrives >= 0.1 s before the next close | - | each new product |
+| C10 | Dump lead | high-speed video (phone 240 fps is sufficient) | film the jaw area through the guard; measure first and last piece arrival relative to the dump request; set dump lead so the first piece lands >= 40 ms after the jaws close and the last >= 40 ms before they open (model: 55 ms for 40 g chips) | both margins >= 40 ms | each new product, after speed or dwell changes |
 | C11 | Conveyor / elevator speeds | tachometer or stopwatch over 1 m | set % so the take-off clears one bag per cycle and the elevator duty is 40-70 % | - | commissioning |
 
 Record every calibration in the maintenance log (monitoring software -> Maintenance -> record with description).

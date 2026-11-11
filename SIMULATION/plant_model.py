@@ -41,6 +41,7 @@ class Plant:
         self.string = 0.35
         self.packets = []                       # (arrival time, grams)
         self.acc = 0.0; self.bags = []; self.in_seal = 0
+        self.land_closed = 0; self.land_open = 0; self.land_rel = []   # where each piece landed (jaws closed / not)
         self.jaw_was_closed = False; self.cut_done = False
         self.bag_out_until = -1.0; self.bag_jam = False
         self.dump_old = False; self.t = 0.0; self.conveyor_ok = True; self.estop_drop = False
@@ -96,6 +97,9 @@ class Plant:
         for ta, g in self.packets:
             if ta <= t:
                 if 0.05 < self.jaw.x < 0.999: self.in_seal += 1
+                if self.jaw.out: self.land_closed += 1
+                else: self.land_open += 1
+                self.land_rel.append(ta)
                 self.acc += g
             else: rest.append((ta, g))
         self.packets = rest

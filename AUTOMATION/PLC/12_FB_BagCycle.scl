@@ -5,19 +5,29 @@
 //
 // Step  Meaning                      Leaves when
 //   0   IDLE (jaws open, no motion)  Run
-//  10   WAIT_CONDITIONS              temps in band, film present, weigher ready
+//  10   WAIT_CONDITIONS              pacing time, conditions, weigher ready
+//                                    [dump request issued here, DumpLead before the pull]
 //  20   PULL_FILM                    FilmPull.Done
 //  30   SETTLE                       SettleTime
-//  40   CLOSE_JAWS (+ vertical bar)  jaw closed sensor   [dump request issued here]
+//  40   CLOSE_JAWS (+ vertical bar)  jaw closed sensor
 //  50   SEAL_DWELL (knife fires)     SealTime
 //  60   OPEN_JAWS                    jaw open + v-seal back + knife home
 //  70   CYCLE_END                    counters, stop requests
 //  900  ABORT                        Reset (outputs to safe state)
 //
-// Product logic: the charge dumped in step 40 of cycle n falls into the bag
-// whose bottom seal is being made in that same step; that bag is closed and
-// cut in cycle n+1. The first cycle after start therefore produces one empty
-// leader bag; the last charge is sealed by a final "closing" cycle.
+// Dump timing: the charge needs ~0.7 s to fall from the weigher gates to the
+// jaw plane and arrives as a ~0.35 s string. It must land while the jaws are
+// CLOSED, so they carry the weight of the charge while the fresh bottom seal
+// sets. The dump request is therefore sent in step 10, Recipe.DumpLead_ms
+// BEFORE the film pull starts, and the pull is then started exactly DumpLead
+// later. Dump-to-jaw-close is then constant (DumpLead + pull + settle + jaw
+// travel), whatever the weigher's readiness did to the cycle start.
+// Once the dump has been sent the pull must follow: product is already falling.
+//
+// Product logic: the charge dumped in step 10 before cycle n lands on the
+// bottom seal made in steps 40-50 of cycle n; that bag is closed and cut in
+// cycle n+1. The first cycle after start therefore produces one empty leader
+// bag; the last charge is sealed by a final "closing" cycle without a dump.
 // ---------------------------------------------------------------------------
 FUNCTION_BLOCK "FB_BagCycle"
 { S7_Optimized_Access := 'TRUE' }
@@ -67,13 +77,19 @@ VERSION : 0.1
       tCycle : TON_TIME;
       stepOld : Int;
       charged : Bool;             // product is in the open bag above the jaws
-      dumpPending : Bool;
+      dumpIssued : Bool;          // dump sent in step 10 of this cycle, product falling
       missedBags : Int;
       bagExpected : Bool;
       singleLatch : Bool;
-      dumpTimer : TON_TIME;
+      dumpCmd : Bool;             // one-scan trigger for the dump pulse
+      dumpAtMs : DInt;            // cycle-timer value when the dump was sent
       dumpPulse : TP_TIME;
       coderPulse : TP_TIME;
+   END_VAR
+   VAR_TEMP
+      periodMs : DInt;            // cycle period from the recipe speed
+      ready : Bool;               // mechanics and process ready for a pull
+      wantProduct : Bool;         // this cycle should receive a charge
    END_VAR
    VAR CONSTANT
       T_ACTUATOR : Time := T#600ms;   // max. travel time of any cylinder
@@ -81,6 +97,8 @@ VERSION : 0.1
 BEGIN
    #BagDone := FALSE;
    #EmptyDone := FALSE;
+   #dumpCmd := FALSE;
+   #periodMs := REAL_TO_DINT(60000.0 / MAX(IN1 := #Recipe.SpeedSet_bpm, IN2 := 1.0));
    // fault flags are one-scan pulses; FB_Alarms (called before this block in the
    // next scan) latches them, so a single RESET clears alarm and sequence together
    #ToJawClose := FALSE; #ToJawOpen := FALSE; #ToVSeal := FALSE; #ToKnife := FALSE;
@@ -108,20 +126,40 @@ BEGIN
             ;   // a charged bag stays open until the next start; operator is informed by HMI
          END_IF;
 
-      10: // WAIT_CONDITIONS - nothing moves, safe place to wait
-         #Waiting := NOT (#TempsInBand AND (#WeigherReady OR #NoProduct OR NOT #Run));
-         IF #CycleStop OR NOT (#Run OR #singleLatch) THEN
-            // final closing cycle if product is waiting in the open bag
+      10: // WAIT_CONDITIONS - jaws open, film still; the weigher dump is sent from here
+         #ready := #TempsInBand AND #FilmPresent AND #AirOk AND #JawOpen AND #VSealBack AND #KnifeHome;
+         #wantProduct := ((#Run AND NOT #CycleStop) OR #singleLatch) AND NOT #NoProduct;
+         IF #dumpIssued THEN
+            // product is falling: start the pull at the pacing time, or DumpLead after
+            // the request if the weigher was late (dump-to-pull varies by <= 1 scan)
+            #Waiting := FALSE;
+            IF TIME_TO_DINT(#tCycle.ET) >= MAX(IN1 := #periodMs, IN2 := #dumpAtMs + #Recipe.DumpLead_ms) THEN
+               #Step := 20;
+            END_IF;
+         ELSIF #CycleStop OR NOT (#Run OR #singleLatch) THEN
+            // final closing cycle (no dump) if product is waiting in the open bag
+            #Waiting := FALSE;
             IF #charged AND #TempsInBand AND #FilmPresent AND #AirOk THEN
                #Step := 20;
             ELSE
                #Step := 0;
             END_IF;
-         ELSIF #TempsInBand AND #FilmPresent AND #AirOk AND #JawOpen AND #VSealBack AND #KnifeHome
-               AND (#WeigherReady OR #NoProduct)
-               // pacing: do not start earlier than the recipe speed allows
-               AND (#tCycle.ET >= DINT_TO_TIME(REAL_TO_DINT(60000.0 / #Recipe.SpeedSet_bpm)) OR #singleLatch) THEN
-            #Step := 20;
+         ELSIF #wantProduct THEN
+            #Waiting := NOT (#TempsInBand AND #WeigherReady);
+            // send the dump DumpLead before the pacing time; if the weigher is late,
+            // the whole cycle shifts so the dump-to-jaw-close time stays constant
+            IF #ready AND #WeigherReady
+               AND (TIME_TO_DINT(#tCycle.ET) + #Recipe.DumpLead_ms >= #periodMs OR #singleLatch) THEN
+               #dumpIssued := TRUE;
+               #dumpCmd := TRUE;
+               #dumpAtMs := TIME_TO_DINT(#tCycle.ET);   // same time base as the pacing: no extra scan
+            END_IF;
+         ELSE
+            // SETUP "empty bag": no product, plain pacing
+            #Waiting := NOT #TempsInBand;
+            IF #ready AND (TIME_TO_DINT(#tCycle.ET) >= #periodMs OR #singleLatch) THEN
+               #Step := 20;
+            END_IF;
          END_IF;
 
       20: // PULL_FILM
@@ -137,8 +175,6 @@ BEGIN
 
       30: // SETTLE
          IF #tStep.ET >= DINT_TO_TIME(#Recipe.SettleTime_ms) THEN
-            #dumpPending := (#Run AND NOT #CycleStop AND NOT #NoProduct AND #WeigherReady)
-                            OR (#singleLatch AND NOT #NoProduct AND #WeigherReady);
             #Step := 40;
          END_IF;
 
@@ -187,9 +223,8 @@ BEGIN
          END_IF;
          #bagExpected := TRUE;
          #BagJam := #missedBags >= 2;
-         #charged := #dumpPending;        // what was dumped in step 40 is now in the new bag
-         #dumpPending := FALSE;
-         #CycleTime_ms := TIME_TO_DINT(#tCycle.ET);
+         #charged := #dumpIssued;         // the charge landed on the seal made in this cycle
+         #dumpIssued := FALSE;
          #singleLatch := FALSE;
          IF #BagJam THEN
             #Step := 900;
@@ -203,7 +238,7 @@ BEGIN
          #qKnife := FALSE;
          #qAirBlast := FALSE;
          #qPullExecute := FALSE;
-         #dumpPending := FALSE;
+         #dumpIssued := FALSE;            // a falling charge ends up in the jaw area: operator clears it
          #singleLatch := FALSE;
          #Waiting := FALSE;
          IF #Reset AND NOT #Abort THEN
@@ -214,13 +249,16 @@ BEGIN
          END_IF;
    END_CASE;
 
-   // -------- weigher dump: issued DumpAdvance after the jaw-close command
-   #dumpTimer(IN := #Step = 40 OR #Step = 50, PT := DINT_TO_TIME(#Recipe.DumpAdvance_ms));
-   #dumpPulse(IN := #dumpTimer.Q AND #dumpPending, PT := T#100ms);
+   // -------- weigher dump: 100 ms pulse from the one-scan command in step 10
+   #dumpPulse(IN := #dumpCmd, PT := T#100ms);
    #qDumpRequest := #dumpPulse.Q;
    #coderPulse(IN := #Step = 30 AND #Recipe.CoderEnable, PT := T#50ms);
    #qCoderTrig := #coderPulse.Q;
 
+   // -------- cycle time = pull start to pull start (read before tCycle restarts)
+   IF #Step = 20 AND #stepOld <> 20 THEN
+      #CycleTime_ms := TIME_TO_DINT(#tCycle.ET);
+   END_IF;
    // -------- step timer restarts on every step change; cycle timer on each pull
    #tStep(IN := #Step = #stepOld, PT := T#1h);
    #tCycle(IN := NOT (#Step = 20 AND #stepOld <> 20), PT := T#1h);

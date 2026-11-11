@@ -12,7 +12,7 @@
 | Conveyor / elevator speed | 10-100 % | HMI recipe | VFD reference |
 | Sealing temperature | 60-210 °C per zone | HMI recipe | PI control |
 | Sealing time | 150-2000 ms | HMI recipe | dwell step |
-| Knife delay, dump advance, air blast, N2 | see `hmi_tags.csv` | HMI recipe | timers |
+| Knife delay, dump lead, air blast, N2 | see `hmi_tags.csv` | HMI recipe | timers |
 
 ## Starting recipes (all values are starting points for trials, not validated settings)
 
@@ -30,7 +30,7 @@ Fill ratio = product bulk volume / maximum pillow volume, limit 0.65; values fro
 
 | Property | Effect | Parameter that must change |
 |---|---|---|
-| Bulk density 45-600 g/L | bag volume, string length in the tube | bag size, speed, dump advance |
+| Bulk density 45-600 g/L | bag volume, string length in the tube | bag size, speed, dump lead |
 | Piece mass 0.2-8 g | weighing resolution | number of heads per dump, feeder tuning |
 | Fragility | breakage | amplitudes, drop heights, speed |
 | Oil/seasoning/crumbs | seal contamination, sticking | dimple plates, seal temperature/time, cleaning interval |

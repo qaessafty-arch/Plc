@@ -37,7 +37,7 @@ Rcp_Temp_Z2,"DB_Recipe".Active.TempSet_Z2,Real,RW,2000,Temperature,60,210,degC,S
 Rcp_Temp_Z3,"DB_Recipe".Active.TempSet_Z3,Real,RW,2000,Temperature,60,210,degC,Setter
 Rcp_TempBand,"DB_Recipe".Active.TempBand,Real,RW,2000,Temperature,3,20,K,Admin
 Rcp_KnifeDelay,"DB_Recipe".Active.KnifeDelay_ms,DInt,RW,2000,Production settings,0,1500,ms,Setter
-Rcp_DumpAdvance,"DB_Recipe".Active.DumpAdvance_ms,DInt,RW,2000,Weight settings,0,800,ms,Setter
+Rcp_DumpLead,"DB_Recipe".Active.DumpLead_ms,DInt,RW,2000,Weight settings,0,800,ms,Setter
 Rcp_AirBlast,"DB_Recipe".Active.AirBlast_ms,DInt,RW,2000,Production settings,0,400,ms,Setter
 Rcp_N2,"DB_Recipe".Active.N2Flush,Bool,RW,2000,Production settings,,,,Setter
 Rcp_ElevSpeed,"DB_Recipe".Active.ElevatorSpeed_pct,Real,RW,2000,Motor speed,10,100,%,Setter

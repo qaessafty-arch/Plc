@@ -20,7 +20,9 @@ VERSION : 0.1
       TempBand : Real := 8.0;             // +/- degC allowed while running
       KnifeDelay_ms : DInt := 200;        // after jaws closed
       KnifeTime_ms : DInt := 100;
-      DumpAdvance_ms : DInt := 0;         // delay of weigher dump after jaw-close command
+      DumpLead_ms : DInt := 55;           // weigher dump request this long BEFORE the film pull;
+                                          // tune (high-speed video) so the whole charge lands
+                                          // while the jaws are closed
       SettleTime_ms : DInt := 50;
       AirBlast_ms : DInt := 0;            // 0 = off
       N2Flush : Bool := FALSE;

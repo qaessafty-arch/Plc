@@ -1,6 +1,6 @@
 # Control sequences, state machines and timing
 
-Implemented in `AUTOMATION/PLC/*.scl`; exercised by `SIMULATION/` (49 checks, all passing in the model).
+Implemented in `AUTOMATION/PLC/*.scl`; exercised by `SIMULATION/` (51 checks, all passing in the model).
 
 ## 1. Operating modes
 
@@ -42,16 +42,16 @@ stateDiagram-v2
 stateDiagram-v2
   [*] --> S0
   S0: 0 IDLE
-  S10: 10 WAIT CONDITIONS
+  S10: 10 WAIT CONDITIONS (weigher dump request, DumpLead before the pull)
   S20: 20 PULL FILM
   S30: 30 SETTLE
-  S40: 40 CLOSE JAWS + vertical bar (weigher dump request)
+  S40: 40 CLOSE JAWS + vertical bar
   S50: 50 SEAL DWELL (knife fires)
   S60: 60 OPEN JAWS
   S70: 70 CYCLE END (count, jam check)
   S900: 900 ABORT (all actuators off)
   S0 --> S10: Run or single cycle
-  S10 --> S20: temps in band, film, air, jaws open, weigher READY, pacing time elapsed
+  S10 --> S20: dump sent, DumpLead elapsed (dump sent at pacing time minus DumpLead, when ready and weigher READY)
   S10 --> S20: stop requested and a charged bag is open (closing cycle)
   S10 --> S0: stop requested, nothing to close
   S20 --> S30: pull done
@@ -67,7 +67,7 @@ stateDiagram-v2
   S900 --> S0: RESET with no abort cause
 ```
 
-Product tracking: the charge requested in step 40 of cycle *n* lands in the bag whose bottom seal is being made in that step and leaves the machine in cycle *n+1*. Hence one empty leader bag after each start and one closing cycle at each stop (both verified in simulation S01/S03/S04).
+Product tracking: the charge requested in step 10 just before cycle *n* falls during the film pull, lands on the bottom seal made in steps 40-50 of cycle *n* while the jaws hold it, and leaves the machine in cycle *n+1*. Hence one empty leader bag after each start and one closing cycle at each stop (both verified in simulation S01/S03/S04).
 
 ## 4. Timing diagram
 
@@ -75,19 +75,25 @@ Simulated, reference recipe (230 mm bag, 40 bags/min): `timing_diagram_simulated
 
 ![timing](timing_diagram_simulated.png)
 
-| Phase | Start s | Duration s | Actuator | Confirmed by |
-|---|---|---|---|---|
-| Film pull | 0.00 | 0.42 | servo, trapezoid 6 m/s², 0.8 m/s | axis done |
-| Settle | 0.42 | 0.05 | - | timer |
-| Jaws + vertical bar close | 0.47 | ~0.12-0.15 | Y1, Y2 | B5 |
-| Weigher dump request | 0.47 + dump advance | 0.10 pulse | relay to weigher | dump-done pulse |
-| Seal dwell | ~0.60 | 0.45 | heat + pressure | timer |
-| Knife | dwell + 0.20 | 0.10 | Y3 | B8 on return |
-| Jaws open | ~1.05 | ~0.12-0.15 | spring-return valves | B6, B7, B8 |
-| Product falling (1.9 m) | from dump | lead ~0.70, tail ~1.05 after dump | gravity | must end before the next jaw close |
-| Pacing wait | ~1.20 | to 1.50 | - | cycle timer |
+Times from the simulation trace, measured from the start of the film pull. The simulated cycle is 1.504 s against the 1.500 s recipe value (40 bags/min): the 2 ms scan of the model rounds the pacing and the 55 ms lead, at most one scan each.
 
-Synchronisation rule: `dump advance + fall of the tail < cycle time - jaw close time`. At 40 bags/min: 0 + 1.05 < 1.50 - 0.15. The recipe value "dump advance" exists so that light, slow products can be given more of the cycle; the fall times must be measured per product (high-speed video) during commissioning.
+| Phase | Start s | End s | Actuator | Confirmed by |
+|---|---|---|---|---|
+| Weigher dump request | -0.056 (DumpLead before the pull, in step 10) | +0.044 | 100 ms pulse, relay to weigher | dump-done pulse |
+| Film pull | 0.000 | 0.422 | servo, trapezoid 6 m/s², 0.8 m/s | axis done |
+| Settle | 0.422 | 0.474 | - | timer |
+| Jaws + vertical bar close | 0.474 | 0.594 | Y1, Y2 | B5 |
+| Seal dwell | 0.596 | 1.048 | heat + pressure | timer |
+| Knife | 0.798 | 0.898 | Y3 | B8 on return |
+| **Charge lands on the closed jaws** | **0.646** | **0.996** | gravity: 0.70 s fall + 0.35 s string | 52 ms after jaws closed, 52 ms before they start to open |
+| Jaws open | 1.048 | 1.168 | spring-return valves | B6, B7, B8 |
+| Pacing wait | 1.172 | 1.504 | - | cycle timer |
+
+Synchronisation rule: the whole charge must land while the jaws are closed, so they carry it while the new bottom seal sets:
+
+`t_closed  <  -DumpLead + t_fall          and          -DumpLead + t_fall + t_string  <  t_open`
+
+with t_closed = 0.594 s and t_open = 1.048 s (both measured from the pull start, fixed by the recipe), t_fall ≈ 0.70 s and t_string ≈ 0.35 s (assumed, product-dependent). In the model this holds for DumpLead between about 10 and 100 ms; 55 ms centres the charge in the dwell. The window only exists while t_string is shorter than the dwell minus margins (0.45 s here): a product with a longer string needs a longer dwell or a lower speed. The pull starts at the pacing time, or DumpLead after the request if the weigher was late, so a late weigher shifts the whole cycle but not this relation. t_fall and t_string must be measured per product with high-speed video (calibration C10).
 
 ## 5. Named sequences
 
@@ -95,7 +101,7 @@ Synchronisation rule: `dump advance + fall of the tail < cycle time - jaw close 
 
 **Product feeding:** weigher "feed request" starts elevator + vibratory tray; they stop when the request drops or on a weigher fault; hopper-low gives a warning only.
 
-**Weighing:** autonomous in the weigher. Bagger sees READY, issues DUMP REQUEST, receives DUMP DONE. No READY for 10 s -> warning 21, amber lamp, machine waits without pulling film.
+**Weighing:** autonomous in the weigher. Bagger sees READY, issues DUMP REQUEST in step 10 (DumpLead before the pull), receives DUMP DONE. Once the request is sent the film pull always follows, because the product is already falling. No READY for 10 s -> warning 21, amber lamp, machine waits without pulling film.
 
 **Packaging / sealing / cutting / discharge:** steps 20-70 above. Bag passing photo-eye B11 resets the jam counter.
 

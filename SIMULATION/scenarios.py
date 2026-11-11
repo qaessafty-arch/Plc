@@ -63,12 +63,16 @@ def s01_normal(seconds=120):
     L = [b["length"] for b in p.bags[2:]]
     res = dict(sim_seconds=seconds, bags_plc=g.plc.bags, bags_plant_filled=len(bags), empty_plc=g.plc.empties,
                mean_period_s=round(statistics.fmean(per), 3), speed_bpm=round(60 / statistics.fmean(per), 1),
+               plc_reported_speed_bpm=round(g.plc.speed, 1),
                weights=wstats(bags, 40.0), bag_length_mm=[round(min(L), 1), round(max(L), 1)],
-               product_in_seal_events=p.in_seal, alarms=g.active(), state=g.plc.mode.State)
+               product_in_seal_events=p.in_seal, pieces_landed_jaws_closed=p.land_closed,
+               pieces_landed_jaws_open=p.land_open, alarms=g.active(), state=g.plc.mode.State)
     checks = [("PLC bag count equals filled bags in plant (+/-1 in flight)", abs(g.plc.bags - len(bags)) <= 1),
               ("no product caught in the seal", p.in_seal == 0),
+              ("every piece lands while the jaws are closed and support the new seal", p.land_open == 0 and p.land_closed > 0),
               ("all filled bags within +/-10 % of target", res["weights"]["within_10pct"] == 100.0),
               ("speed is paced to the 40 bags/min recipe value (+/-0.5)", abs(res["speed_bpm"] - 40.0) <= 0.5),
+              ("speed reported by the PLC matches the real speed (+/-0.5)", abs(res["plc_reported_speed_bpm"] - res["speed_bpm"]) <= 0.5),
               ("bag length 230 +/-1 mm", abs(min(L) - 230) <= 1 and abs(max(L) - 230) <= 1),
               ("no alarm (warnings 21/26/32 allowed)", all(a in (21, 26, 32) for a in g.active())),
               ("exactly one empty leader bag", g.plc.empties == 1)]
