@@ -28,7 +28,7 @@
   <section class="intro wrap">
     <p class="eyebrow">Project SPM-420 · rev P1 · preliminary design</p>
     <h1>Automatic snack filling and packaging line</h1>
-    <p class="lede">A 10-head multihead weigher feeding a vertical form-fill-seal bagger, for potato chips, crispy snacks, crackers and small biscuits. Rotate, explode and inspect every assembly below.</p>
+    <p class="lede">A 10-head multihead weigher feeding a vertical form-fill-seal bagger, for potato chips, crispy snacks, crackers and small biscuits. Run the simulation on the 3D model, or rotate, explode and inspect every assembly.</p>
   </section>
 
   <section id="model" class="viewer" aria-label="Interactive 3D model">
@@ -46,6 +46,22 @@
       <p class="hint">Drag to rotate · right-drag to pan · scroll to zoom · click a part</p>
     </div>
     <aside class="panel">
+      <div class="block sim">
+        <p class="lbl">Simulation <span class="muted">simulated, not measured</span></p>
+        <div class="simrow">
+          <button type="button" id="simPlay" class="on">Run</button>
+          <button type="button" id="simReset">Reset</button>
+          <label for="simSpeed" class="muted">Speed</label>
+          <select id="simSpeed"><option value="0.25">0.25×</option><option value="0.5" selected>0.5×</option><option value="1">1×</option></select>
+        </div>
+        <dl class="simout">
+          <div><dt>PLC step</dt><dd id="sStep" aria-live="polite">—</dd></div>
+          <div><dt>Cycle time</dt><dd id="sTime" class="mono">—</dd></div>
+          <div><dt>Jaws</dt><dd id="sJaw">—</dd></div>
+          <div><dt>Bags made</dt><dd id="sBags" class="mono">0</dd></div>
+          <div><dt>Rate</dt><dd id="sRate" class="mono">—</dd></div>
+        </dl>
+      </div>
       <div class="block">
         <label for="explode" class="lbl">Explode <span id="exv" class="mono">0 %</span></label>
         <input id="explode" type="range" min="0" max="100" value="0">

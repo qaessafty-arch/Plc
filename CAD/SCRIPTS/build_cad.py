@@ -150,6 +150,22 @@ def vertical_seal():
     return union([bar, cyl, brk])
 
 
+def jaw_parts():
+    """The jaw assembly split into its moving pieces (used by the web simulator)."""
+    jw, jh = P.JAW_SECTION
+    z0 = P.JAW_Z - jh / 2
+    L2 = P.JAW_LENGTH / 2
+    gap = 35
+    front = union([box(-L2, L2, -gap - jw, -gap, z0, z0 + jh),
+                   box(-L2 - 70, L2 + 70, -(gap + jw + 25), -(gap + jw), z0 - 10, z0 + jh + 10)])
+    rear = union([box(-L2, L2, gap, gap + jw, z0, z0 + jh),
+                  box(-L2 - 70, L2 + 70, gap + jw, gap + jw + 25, z0 - 10, z0 + jh + 10),
+                  box(-L2 + 10, L2 - 10, gap + 2, gap + jw - 2, P.JAW_Z - 1, P.JAW_Z + 1)])
+    fixed = union([cyl_y(10, -220, 320, x, P.JAW_Z) for x in (-L2 - 45, L2 + 45)] +
+                  [cyl_y(38, 150, 320, 0, P.JAW_Z), box(-L2 - 75, -L2 - 65, -200, 300, P.JAW_Z + 40, P.JAW_Z + 60)])
+    return dict(front=front, rear=rear, fixed=fixed, open_gap=gap)
+
+
 def jaw_assembly():
     jw, jh = P.JAW_SECTION
     z0 = P.JAW_Z - jh / 2
