@@ -1,0 +1,493 @@
+{
+ "envelope_mm": [
+  4450,
+  1901,
+  3900
+ ],
+ "parts": [
+  {
+   "id": "B01_main_frame",
+   "label": "Bagger main frame",
+   "group": "Bagger",
+   "explode": [
+    0,
+    0,
+    0
+   ],
+   "color": [
+    0.75,
+    0.77,
+    0.8
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    1000.0,
+    1300.0,
+    1508.5
+   ],
+   "mass_kg": 98.5
+  },
+  {
+   "id": "B02_film_roll",
+   "label": "Film roll (\u00d8400, 420 web)",
+   "group": "Film system",
+   "explode": [
+    0,
+    900,
+    0
+   ],
+   "color": [
+    0.95,
+    0.85,
+    0.35
+   ],
+   "material": "OPP laminate",
+   "bbox_mm": [
+    341.1,
+    401.1,
+    400.0
+   ],
+   "mass_kg": 37.5
+  },
+  {
+   "id": "B03_unwind_shaft",
+   "label": "Film unwind shaft",
+   "group": "Film system",
+   "explode": [
+    0,
+    900,
+    0
+   ],
+   "color": [
+    0.55,
+    0.55,
+    0.6
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    900.0,
+    100.0,
+    280.0
+   ],
+   "mass_kg": 17.1
+  },
+  {
+   "id": "B04_guide_rollers",
+   "label": "Film guide rollers",
+   "group": "Film system",
+   "explode": [
+    0,
+    900,
+    0
+   ],
+   "color": [
+    0.7,
+    0.7,
+    0.75
+   ],
+   "material": "EN AW-6082",
+   "bbox_mm": [
+    520.0,
+    385.0,
+    695.0
+   ],
+   "mass_kg": 14.4
+  },
+  {
+   "id": "B05_dancer_arm",
+   "label": "Dancer arm",
+   "group": "Film system",
+   "explode": [
+    0,
+    900,
+    0
+   ],
+   "color": [
+    0.3,
+    0.5,
+    0.8
+   ],
+   "material": "EN AW-6082",
+   "bbox_mm": [
+    492.0,
+    262.1,
+    44.0
+   ],
+   "mass_kg": 2.3
+  },
+  {
+   "id": "B06_forming_tube",
+   "label": "Forming / fill tube",
+   "group": "Forming",
+   "explode": [
+    0,
+    -200,
+    900
+   ],
+   "color": [
+    0.85,
+    0.85,
+    0.9
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    102.1,
+    101.9,
+    690.3
+   ],
+   "mass_kg": 3.4
+  },
+  {
+   "id": "B07_forming_collar",
+   "label": "Forming collar",
+   "group": "Forming",
+   "explode": [
+    0,
+    -200,
+    900
+   ],
+   "color": [
+    0.9,
+    0.9,
+    0.95
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    281.9,
+    301.9,
+    192.2
+   ],
+   "mass_kg": 6.8
+  },
+  {
+   "id": "B08_infeed_funnel",
+   "label": "Infeed funnel",
+   "group": "Forming",
+   "explode": [
+    0,
+    -200,
+    900
+   ],
+   "color": [
+    0.85,
+    0.85,
+    0.9
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    304.5,
+    303.7,
+    254.5
+   ],
+   "mass_kg": 2.4
+  },
+  {
+   "id": "B09_pull_belt_left",
+   "label": "Pull belt, left",
+   "group": "Film pull",
+   "explode": [
+    0,
+    -900,
+    300
+   ],
+   "color": [
+    0.15,
+    0.15,
+    0.15
+   ],
+   "material": "EN AW-6082",
+   "bbox_mm": [
+    150.0,
+    82.1,
+    310.2
+   ],
+   "mass_kg": 1.3
+  },
+  {
+   "id": "B10_pull_belt_right",
+   "label": "Pull belt, right",
+   "group": "Film pull",
+   "explode": [
+    0,
+    -900,
+    300
+   ],
+   "color": [
+    0.15,
+    0.15,
+    0.15
+   ],
+   "material": "EN AW-6082",
+   "bbox_mm": [
+    150.0,
+    82.1,
+    310.2
+   ],
+   "mass_kg": 1.3
+  },
+  {
+   "id": "B11_belt_servo_drive",
+   "label": "Pull-belt servo drive",
+   "group": "Film pull",
+   "explode": [
+    0,
+    -900,
+    300
+   ],
+   "color": [
+    0.2,
+    0.2,
+    0.25
+   ],
+   "material": "steel",
+   "bbox_mm": [
+    541.9,
+    60.2,
+    60.2
+   ],
+   "mass_kg": 3.4
+  },
+  {
+   "id": "B12_vertical_seal",
+   "label": "Vertical seal bar",
+   "group": "Sealing",
+   "explode": [
+    0,
+    -1300,
+    500
+   ],
+   "color": [
+    0.8,
+    0.3,
+    0.2
+   ],
+   "material": "EN AW-6082",
+   "bbox_mm": [
+    80.0,
+    160.0,
+    320.0
+   ],
+   "mass_kg": 1.7
+  },
+  {
+   "id": "B13_jaw_assembly",
+   "label": "Horizontal sealing jaws + knife",
+   "group": "Sealing",
+   "explode": [
+    0,
+    -1500,
+    -100
+   ],
+   "color": [
+    0.8,
+    0.35,
+    0.2
+   ],
+   "material": "steel",
+   "bbox_mm": [
+    385.0,
+    540.1,
+    98.0
+   ],
+   "mass_kg": 20.5
+  },
+  {
+   "id": "B14_guard_doors",
+   "label": "Front guard doors",
+   "group": "Guarding",
+   "explode": [
+    0,
+    -2000,
+    0
+   ],
+   "color": [
+    0.6,
+    0.8,
+    0.95
+   ],
+   "material": "polycarbonate",
+   "bbox_mm": [
+    900.0,
+    6.0,
+    990.0
+   ],
+   "mass_kg": 6.3
+  },
+  {
+   "id": "B15_electrical_cabinet",
+   "label": "Electrical cabinet",
+   "group": "Controls",
+   "explode": [
+    1200,
+    0,
+    0
+   ],
+   "color": [
+    0.7,
+    0.72,
+    0.75
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    340.1,
+    600.0,
+    1000.0
+   ],
+   "mass_kg": 85.4
+  },
+  {
+   "id": "B16_hmi_station",
+   "label": "Operator station (HMI)",
+   "group": "Controls",
+   "explode": [
+    1200,
+    0,
+    0
+   ],
+   "color": [
+    0.2,
+    0.2,
+    0.22
+   ],
+   "material": "polymer",
+   "bbox_mm": [
+    260.0,
+    84.0,
+    280.0
+   ],
+   "mass_kg": 0.7
+  },
+  {
+   "id": "B17_film_web",
+   "label": "Film web path",
+   "group": "Film system",
+   "explode": [
+    0,
+    900,
+    0
+   ],
+   "color": [
+    1.0,
+    0.9,
+    0.4
+   ],
+   "material": "film",
+   "bbox_mm": [
+    340.0,
+    764.7,
+    880.9
+   ],
+   "mass_kg": 0.5
+  },
+  {
+   "id": "C01_takeoff_conveyor",
+   "label": "Take-off conveyor",
+   "group": "Discharge",
+   "explode": [
+    1200,
+    -1300,
+    0
+   ],
+   "color": [
+    0.3,
+    0.6,
+    0.35
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    1819.4,
+    500.2,
+    777.6
+   ],
+   "mass_kg": 58.3
+  },
+  {
+   "id": "P01_weigher_platform",
+   "label": "Weigher platform + stair",
+   "group": "Structure",
+   "explode": [
+    0,
+    0,
+    1700
+   ],
+   "color": [
+    0.6,
+    0.62,
+    0.65
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    3184.6,
+    1900.0,
+    3100.0
+   ],
+   "mass_kg": 272.0
+  },
+  {
+   "id": "W01_multihead_weigher",
+   "label": "10-head multihead weigher (envelope)",
+   "group": "Weighing",
+   "explode": [
+    0,
+    0,
+    2900
+   ],
+   "color": [
+    0.82,
+    0.84,
+    0.88
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    1100.0,
+    1100.0,
+    1660.0
+   ],
+   "mass_kg": 204.6
+  },
+  {
+   "id": "E01_z_bucket_elevator",
+   "label": "Z-bucket elevator (envelope)",
+   "group": "Feeding",
+   "explode": [
+    -1500,
+    0,
+    600
+   ],
+   "color": [
+    0.72,
+    0.74,
+    0.78
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    3080.0,
+    800.2,
+    3900.0
+   ],
+   "mass_kg": 371.9
+  },
+  {
+   "id": "E02_infeed_hopper",
+   "label": "Infeed hopper + vibratory tray",
+   "group": "Feeding",
+   "explode": [
+    -1500,
+    0,
+    600
+   ],
+   "color": [
+    0.8,
+    0.82,
+    0.85
+   ],
+   "material": "1.4301 stainless",
+   "bbox_mm": [
+    1141.4,
+    1041.4,
+    1324.5
+   ],
+   "mass_kg": 68.8
+  }
+ ]
+}
