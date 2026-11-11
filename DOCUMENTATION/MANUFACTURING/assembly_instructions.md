@@ -22,7 +22,7 @@
 
 Tightening: stainless fasteners with anti-seize (galling); M6 8 N.m, M8 20 N.m, M10 40 N.m, M12 70 N.m, M16 170 N.m (A2-70, lubricated - confirm against the fastener supplier's table).
 
-Exploded view for orientation: `CAD/EXPLODED/SPM-420_exploded.step` / `.svg`.
+Exploded view for orientation: `CAD/EXPLODED/SPM-420_exploded.step` / `.png`.
 
 ## Film threading (machine in SETUP, guards closed for every jog)
 

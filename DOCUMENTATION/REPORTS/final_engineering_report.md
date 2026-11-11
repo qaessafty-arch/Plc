@@ -73,7 +73,7 @@ Line: floor hopper with vibratory tray -> Z-bucket elevator -> 10-head combinati
 |---|---|---|
 | Analysis of the video images | video and thumbnail hosts blocked | analysis from title, publisher catalogue and published machine data, plus a viewing checklist |
 | SolidWorks / Inventor / Fusion native files | no such software | CadQuery (Python) parametric source `CAD/SCRIPTS/build_cad.py` + neutral STEP (opens in all of them and in FreeCAD), STL, DXF, PDF |
-| Photorealistic Blender render | not attempted | hidden-line isometric SVG of assembly and exploded view; STL for any renderer |
+| Photorealistic Blender render | not attempted | hidden-line isometric views of assembly and exploded arrangement (PNG/PDF); STL for any renderer |
 | Detailed manufacturing drawings with tolerances | needs detail design first | component sheets with envelope dimensions; tolerances stated in the manufacturing guide |
 | TIA Portal project (.ap17) and WinCC HMI | proprietary, needs TIA Portal | importable SCL/UDT/DB sources, tag and alarm CSVs, HMI specification, browser prototype |
 | ECAD schematic set | no ECAD tool | design-level diagrams, protection tables, cable schedule, terminal plan |

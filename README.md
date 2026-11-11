@@ -2,6 +2,8 @@
 
 Engineering design package for a snack line (hopper -> Z-bucket elevator -> 10-head multihead weigher -> vertical form-fill-seal bagger -> take-off conveyor), inspired by the reference video <https://youtu.be/BCQ6pwSIyH4>.
 
+![Isometric](CAD/ASSEMBLY/SPM-420_isometric.png)
+
 ![General arrangement](CAD/DRAWINGS/GA-001_general_arrangement.png)
 
 ## Read this first

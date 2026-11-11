@@ -353,8 +353,4 @@ def main():
 
 
 if __name__ == "__main__":
-    comp, expc = main()
-    opt = dict(width=1400, height=1000, marginLeft=40, marginTop=40, showAxes=False,
-               projectionDir=(-1.6, -2.2, 1.1), strokeWidth=0.6, showHidden=False)
-    exporters.export(cq.Workplane("XY").add(comp), os.path.join(CAD, "ASSEMBLY", "SPM-420_isometric.svg"), opt=opt)
-    exporters.export(cq.Workplane("XY").add(expc), os.path.join(CAD, "EXPLODED", "SPM-420_exploded.svg"), opt=opt)
+    main()

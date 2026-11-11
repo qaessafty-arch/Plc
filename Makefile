@@ -7,6 +7,7 @@ cad:
 	python3 CAD/SCRIPTS/build_cad.py
 drawings:
 	python3 CAD/SCRIPTS/build_drawings.py
+	python3 CAD/SCRIPTS/render_views.py
 sim:
 	python3 SIMULATION/weigher_sim.py > /dev/null
 	python3 SIMULATION/run_simulation.py
