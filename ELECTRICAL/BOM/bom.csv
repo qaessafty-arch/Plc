@@ -1,0 +1,78 @@
+item,group,component,function,specification,manufacturer_or_alternative,model,model_status,qty_edu,qty_semi,qty_ind,unit_usd,price_basis,purchase_source
+1,Structure,Main frame material,Bagger frame,SHS 50x50x2 EN 1.4301 (304) ~60 m incl. brackets,any stainless stockist,-,generic,0,1,1,900,estimate,local steel stockist
+2,Structure,Aluminium profile frame kit,Prototype frame,40x40 slot-8 profile ~18 m + brackets,item / Bosch Rexroth / generic,-,generic,1,0,0,350,estimate,profile distributor
+3,Structure,Sheet metal parts 304,"Covers, hoppers, chutes, film carriage plates",2 mm + 3 mm 2B / brushed laser cut and bent,local laser shop,per drawings,generic,0,1,1,1400,estimate,local fabrication
+4,Structure,Guard doors,Fixed and interlocked guards,polycarbonate 6 mm clear + 304 frames,generic,-,generic,1,1,1,300,estimate,local plastics supplier
+5,Structure,Levelling feet M16 stainless,Adjustable feet,M16 x 100 hygienic foot 500 kg,NHK / Martin / generic,-,generic,4,4,4,18,estimate,industrial hardware
+6,Structure,Weigher platform with stair and handrail,Access to weigher,1900x1900 deck at +2000 SHS 80x80x3 304 / painted steel option,local fabrication,per GA-001,generic,0,1,1,3200,estimate,local fabrication
+7,Film,Forming set (collar + tube),Forms web into tube; format part per bag width,304 polished / dimpled for chips film; one per width,specialist former maker,per bag width,generic,1,2,3,650,estimate,former specialist / VFFS OEM
+8,Film,Film unwind shaft with core chucks,Holds 76 mm core roll max 400 OD,stainless shaft + cone chucks + friction brake,generic,-,generic,1,1,0,180,estimate,packaging spares supplier
+9,Film,Pneumatic expanding shaft 3 inch,Roll holding (industrial),air shaft 76 mm x 500,generic,-,generic,0,0,1,320,estimate,converting spares supplier
+10,Film,Guide rollers 50 dia x 450,Web path,anodised aluminium idlers on ball bearings,generic,-,generic,3,5,5,45,estimate,packaging spares supplier
+11,Film,Dancer arm assembly,Tension buffer + unwind demand,aluminium arm + roller + spring / low-friction cylinder,in-house,per drawings,generic,1,1,1,150,estimate,in-house
+12,Film,Unwind gearmotor 60 W,Powered unwind (semi/industrial),AC induction gearmotor 60 W 1:30,Oriental / JSCC / generic,-,generic,0,1,1,160,estimate,motion distributor
+13,Pull,Film pull belt pair,Draws film over tube,timing belt with rubber/vacuum cover 20 mm wide ~600 mm loop,generic,to match pulleys,generic,2,2,2,40,estimate,belt supplier
+14,Pull,Pull belt carriages,Belt units with pulleys and pressure cylinders,aluminium housings + 4 pulleys + 2 compact cylinders,in-house,per drawings,generic,1,1,1,420,estimate,in-house
+15,Pull,Servo drive 0.4 kW PROFINET,Film pull axis,SINAMICS V90 PN 200 V 0.4 kW with STO,Siemens,6SL3210-5FB10-4UF1,verified 2026-11-11,0,1,1,650,estimate,Siemens distributor
+16,Pull,Servo motor 0.4 kW,Film pull axis,SIMOTICS S-1FL6 1.27 Nm 3000 rpm incremental 2500 ppr,Siemens,1FL6034-2AF21-1AA1,verified 2026-11-11,0,1,1,450,estimate,Siemens distributor
+17,Pull,Motor power + encoder cables 5 m,Servo connection,MOTION-CONNECT 300 pre-assembled,Siemens,see V90 manual table,to select,0,1,1,160,estimate,Siemens distributor
+18,Pull,Planetary gearbox 5:1,Speed reduction for pull belts,60 mm frame <= 8 arcmin,Neugart / Apex / generic,-,generic,0,1,1,220,estimate,motion distributor
+19,Pull,Closed-loop stepper NEMA 23 + driver,Film pull axis (prototype),2-3 N.m with encoder + pulse/direction driver,Leadshine / generic,-,generic,1,0,0,110,estimate,online motion supplier
+20,Seal,Horizontal jaw set,Transverse seals,2 jaws 240 mm serrated hardened steel with knife slot,in-house / jaw specialist,per drawings,generic,1,1,1,600,estimate,in-house / jaw specialist
+21,Seal,Jaw guide rods and bushings,Jaw motion,2 x 20 mm hard-chrome rods + 4 linear bushings,generic,-,generic,1,1,1,140,estimate,linear motion supplier
+22,Seal,Vertical seal bar,Longitudinal seal,aluminium bar 320 mm with PTFE cover,in-house,per drawings,generic,1,1,1,120,estimate,in-house
+23,Seal,Cartridge heaters,Heating zones Z1-Z3,2 x 250 W per jaw + 1 x 300 W 230 V stainless sheath,Watlow / Rotfil / generic,size per jaw bore,generic,5,5,5,22,estimate,heater supplier
+24,Seal,Thermocouples type K,Zone temperature,mineral insulated 3 mm ungrounded spring loaded,generic,-,generic,3,4,4,15,estimate,sensor supplier
+25,Seal,Bimetal thermal cut-outs 250 C manual reset,Independent over-temperature protection,one per jaw; NC,generic,-,generic,3,3,3,9,estimate,heater supplier
+26,Seal,Serrated cut-off knife 220 mm,Bag separation,hardened zig-zag blade,packaging spares supplier,-,generic,1,2,2,35,estimate,packaging spares supplier
+27,Pneumatic,ISO 15552 cylinder 63x60,Jaw close,double acting magnetic cushioned,Festo / SMC / Airtac,-,generic,0,1,1,110,estimate,pneumatic distributor
+28,Pneumatic,Compact cylinder 40x30,Vertical seal,double acting magnetic,Festo / SMC / Airtac,-,generic,1,1,1,45,estimate,pneumatic distributor
+29,Pneumatic,Compact cylinder 25x20,Knife (and prototype jaw 50x40 x1),double acting magnetic,Festo / SMC / Airtac,-,generic,2,1,1,35,estimate,pneumatic distributor
+30,Pneumatic,Valve manifold 5/2 monostable 24 V,Y1-Y5,4-6 stations G1/8 spring return with manual override,Festo / SMC / Airtac,-,generic,1,1,1,260,estimate,pneumatic distributor
+31,Pneumatic,Air preparation unit,Filter-regulator + lockable shut-off + soft start + pressure switch,G1/4 5 um + 0.01 um coalescing; lockable valve,Festo / SMC / Airtac,-,generic,1,1,1,190,estimate,pneumatic distributor
+32,Pneumatic,Safety exhaust (dump) valve,Removes air on E-stop / guard open,monitored redundant dump valve for Cat. 3/4 (single valve for prototype),Festo / SMC / Ross,-,generic,1,1,1,380,estimate,pneumatic distributor
+33,Pneumatic,Reed switches + tubing + fittings,Cylinder sensing and plumbing,6 reed switches; PU tube 6/8 mm; flow controls,generic,-,generic,1,1,1,150,estimate,pneumatic distributor
+34,Control,PLC CPU 1215C DC/DC/DC,Machine control,14 DI / 10 DO / 2 AI / 2 AO 2x PROFINET,Siemens,6ES7215-1AG40-0XB0,verified 2026-11-11,0,1,0,620,estimate,Siemens distributor
+35,Control,PLC CPU 1214C DC/DC/DC,Machine control (prototype),14 DI / 10 DO / 2 AI PTO for stepper,Siemens,6ES7214-1AG40-0XB0,from memory - confirm,1,0,0,420,estimate,Siemens distributor
+36,Control,Fail-safe CPU 1215FC DC/DC/DC + F-DI/F-DQ,Machine control with integrated safety,replaces items 34 and 44,Siemens,select in TIA Selection Tool,to select,0,0,1,1500,estimate,Siemens distributor
+37,Control,Digital I/O SM 1223 16DI/16DO,I/O expansion,24 V DC sink/source; transistor 0.5 A,Siemens,6ES7223-1BL32-0XB0,verified 2026-11-11,0,1,1,330,estimate,Siemens distributor
+38,Control,Thermocouple module SM 1231 AI4 x TC,Jaw temperatures,4 channel thermocouple 16 bit,Siemens,6ES7231-5QD32-0XB0,from memory - confirm,1,1,1,360,estimate,Siemens distributor
+39,Control,HMI KTP700 Basic PN,Operator panel,7 inch 800x480 PROFINET,Siemens,6AV2123-2GB03-0AX0,verified 2026-11-11,0,1,1,620,estimate,Siemens distributor
+40,Control,HMI KTP400 Basic PN,Operator panel (prototype),4.3 inch,Siemens,6AV2123-2DB03-0AX0,from memory - confirm,1,0,0,330,estimate,Siemens distributor
+41,Control,Unmanaged Ethernet switch 5 port,PLC / HMI / drive / service,industrial DIN rail 24 V,Siemens SCALANCE XB005 / Moxa / generic,-,generic,1,1,1,90,estimate,automation distributor
+42,Control,24 V DC power supply 10 A,Control voltage,230 V AC in 24 V 10 A DIN rail (5 A for prototype),Siemens SITOP / Mean Well / Phoenix,-,generic,1,1,1,120,estimate,automation distributor
+43,Control,Electronic 24 V circuit protection 4 channel,Branch protection F10-F13,adjustable 1-10 A with common alarm contact,Siemens SITOP PSE200U / Phoenix / Murr,-,generic,0,1,1,140,estimate,automation distributor
+44,Safety,Safety relay E-stop / guard,K1 and K2,24 V DC 3 NO + 1 NC up to PL e / SIL 3,Pilz,PNOZ s4 (750104),verified 2026-11-11,1,2,0,210,estimate,Pilz distributor
+45,Safety,Emergency-stop push-button 2 NC,E-stop devices,ISO 13850 mushroom twist release yellow enclosure,Schneider / Siemens / Eaton,-,generic,1,4,4,35,estimate,electrical wholesaler
+46,Safety,Coded non-contact safety switch,Guard door interlock,RFID coded PL e capable 2 OSSD / 2 NC,Pilz PSENcode / Sick / Schmersal,-,generic,1,2,3,120,estimate,safety distributor
+47,Safety,Main disconnector 25 A 4-pole lockable,Supply isolation / LOTO,red/yellow handle door coupled padlockable,Siemens / Schneider / ABB,-,generic,1,1,1,60,estimate,electrical wholesaler
+48,Power,MCBs RCBO and fuses set,Circuit protection,1 x C16 4P + 6 x 1P/2P branch MCB + 30 mA RCBO socket,Siemens / Schneider / ABB,-,generic,1,1,1,160,estimate,electrical wholesaler
+49,Power,Heater contactor 3-pole 9 A 24 V DC coil + mirror contact,KM1,AC-1 >= 20 A with NC mirror contact,Siemens / Schneider / ABB,-,generic,1,1,1,45,estimate,electrical wholesaler
+50,Power,Solid-state relays 25 A zero-cross + heat sinks,Heater zones,24 V DC input 230 V AC load,Carlo Gavazzi / Crydom / generic,-,generic,3,3,3,28,estimate,electrical wholesaler
+51,Power,VFD 0.37 kW 1AC 230 V,Elevator and take-off drives,V/f 1AC 200-240 V in / 3AC out,Siemens SINAMICS V20 / Schneider ATV12 / generic,-,generic,0,2,2,170,estimate,automation distributor
+52,Power,Interface relays 24 V DC,Signal isolation to weigher and coder,6 mm slim relay 1 CO,Phoenix / Weidmuller / Finder,-,generic,4,8,8,9,estimate,electrical wholesaler
+53,Power,Enclosure 1000x600x300 stainless IP54,Electrical cabinet,304 with mounting plate (painted steel 600x400 for prototype),Rittal / Eldon / local,-,generic,1,1,1,750,estimate,enclosure distributor
+54,Power,Cabinet accessories,"Terminals, duct, DIN rail, ferrules, glands, labels, filter fan, PE bar",-,Phoenix / Weidmuller / Wago,-,generic,1,1,1,450,estimate,electrical wholesaler
+55,Power,Cables and connectors,Field wiring,"control 0.75 mm2, power 1.5-2.5 mm2, M12 sensor cables, shielded motor cable, thermocouple extension",Lapp / Helukabel / generic,-,generic,1,1,1,400,estimate,cable distributor
+56,Sensors,Contrast (eye-mark) sensor,Registration mark,RGB contrast sensor 10 kHz M12,Sick KT series / Datalogic / Leuze,-,generic,0,1,1,260,estimate,sensor distributor
+57,Sensors,Photoelectric sensors,"Film run-out, bag discharge",diffuse and retro-reflective M18 PNP M12,Omron / Sick / ifm,-,generic,2,2,2,55,estimate,sensor distributor
+58,Sensors,Inductive proximity M12 PNP,Dancer limits,Sn 4 mm flush M12 connector,Omron / ifm / Balluff,-,generic,2,2,2,22,estimate,sensor distributor
+59,Sensors,Capacitive level sensors M18/M30,"Hopper low, funnel blockage",adjustable PNP,ifm / Sick / generic,-,generic,1,2,2,60,estimate,sensor distributor
+60,Sensors,Stack light 3 colour + buzzer 24 V,Status indication,LED 50-70 mm,Werma / Patlite / generic,-,generic,1,1,1,70,estimate,automation distributor
+61,Sensors,Push-buttons and key switch 22 mm,"Start, stop, reset (illuminated), maintenance key",IP65,Siemens / Schneider / Eaton,-,generic,1,1,1,90,estimate,electrical wholesaler
+62,Weighing,Multihead weigher 10 head 1.6 L,Product weighing,"10-1000 g class, dimpled contact parts for snacks, dump-request interface, own cabinet",High Dream / Kenwei / Ishida / Yamato (industrial),supplier quotation,to quote,0,1,0,9000,market listing range seen 2026-11-11 (9000-11000 USD for weigher+bagger sets; stand-alone quote required),weigher OEM
+63,Weighing,Multihead weigher 10/14 head - branded with approval,Product weighing (industrial),"OIML/MID approvable, IP65, memory for 99 products",Ishida / Yamato / Multipond,supplier quotation,to quote,0,0,1,45000,estimate,weigher OEM
+64,Weighing,Prototype weigh bucket,Single-head weighing,"1 kg single-point load cell + HX711 class ADC + stepper gate + vibratory tray",generic,-,generic,1,0,0,180,estimate,online electronics supplier
+65,Weighing,Microcontroller board for weigh head,Prototype weigher controller,STM32 / ESP32 class with RS-485,generic,-,generic,1,0,0,25,estimate,online electronics supplier
+66,Conveying,Z-bucket elevator 1.8 L,Product feeding to weigher,"PP food-grade buckets, 304 frame, 0.37 kW, discharge at ~3.6 m, with vibratory infeed hopper",packaging line OEM,supplier quotation,to quote,0,1,1,3500,market listing range seen 2026-11-11 (2800-4500 USD),conveyor OEM
+67,Conveying,Take-off conveyor 1800x300,Finished bag discharge,"PU or modular belt, 0.18 kW gearmotor, inclined",conveyor OEM / in-house,per GA-001,generic,0,1,1,900,estimate,conveyor OEM
+68,Conveying,Small flat belt conveyor 600 mm,Bag discharge (prototype),24 V DC gearmotor,generic,-,generic,1,0,0,150,estimate,online supplier
+69,Options,Thermal-transfer or hot-foil date coder,Date / lot marking,32 mm intermittent,Markem / Domino / Linx / generic,supplier quotation,to quote,0,0,1,3500,estimate,coding OEM
+70,Options,Checkweigher with reject,Per-bag weight control and records,"10-500 g, +/-0.5 g class, air-blast reject",Mettler-Toledo / Ishida / generic,supplier quotation,to quote,0,0,1,9000,estimate,inspection OEM
+71,Options,Metal detector (throat or belt),Foreign-body control (HACCP CCP),"Fe 1.0 / NFe 1.2 / SS 1.5 mm class - metallised film needs throat type before bagging",Mettler-Toledo Safeline / Loma / Fortress,supplier quotation,to quote,0,0,1,8000,estimate,inspection OEM
+72,Options,Nitrogen flush kit,Modified atmosphere,"lance in forming tube, flowmeter, solenoid valve, regulator",in-house,-,generic,0,0,1,400,estimate,pneumatic distributor
+73,Services,Machining and welding labour,Fabrication,"frame welding, machining of jaws, carriages, shafts",local workshop,-,generic,0.3,1,1.2,6000,estimate,local workshop
+74,Services,Electrical panel build and wiring labour,Cabinet and field wiring,-,panel builder,-,generic,0.3,1,1.2,2500,estimate,panel builder
+75,Services,"Software licences (TIA Portal STEP 7 Basic, OPC UA runtime)",Engineering,one seat + S7-1200 OPC UA Basic licence,Siemens,-,to select,1,1,1,600,estimate,Siemens distributor
+76,Services,"Commissioning, FAT/SAT, documentation, CE/conformity work",Validation,-,integrator,-,generic,0,1,2.5,4000,estimate,integrator
+77,Services,Air compressor 0.3 m3/min with dryer and filters,Compressed air (if no plant air),oil-free scroll or oil-lubricated + 0.01 um filtration,Atlas Copco / Kaeser / generic,-,generic,0,1,1,1800,estimate,compressor dealer

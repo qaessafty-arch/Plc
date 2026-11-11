@@ -1,0 +1,228 @@
+// ---------------------------------------------------------------------------
+// FB_BagCycle - the form/fill/seal sequence (one scan = one evaluation).
+// The Python model SIMULATION/plc_model.py is a line-by-line port of this
+// block; keep step numbers identical in both.
+//
+// Step  Meaning                      Leaves when
+//   0   IDLE (jaws open, no motion)  Run
+//  10   WAIT_CONDITIONS              temps in band, film present, weigher ready
+//  20   PULL_FILM                    FilmPull.Done
+//  30   SETTLE                       SettleTime
+//  40   CLOSE_JAWS (+ vertical bar)  jaw closed sensor   [dump request issued here]
+//  50   SEAL_DWELL (knife fires)     SealTime
+//  60   OPEN_JAWS                    jaw open + v-seal back + knife home
+//  70   CYCLE_END                    counters, stop requests
+//  900  ABORT                        Reset (outputs to safe state)
+//
+// Product logic: the charge dumped in step 40 of cycle n falls into the bag
+// whose bottom seal is being made in that same step; that bag is closed and
+// cut in cycle n+1. The first cycle after start therefore produces one empty
+// leader bag; the last charge is sealed by a final "closing" cycle.
+// ---------------------------------------------------------------------------
+FUNCTION_BLOCK "FB_BagCycle"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Run : Bool;                 // continuous production requested
+      SingleCycle : Bool;         // SETUP: exactly one cycle
+      NoProduct : Bool;           // SETUP: empty bags (weigher ignored)
+      Abort : Bool;               // class A alarm or safety not OK
+      CycleStop : Bool;           // class B alarm or operator stop: finish bag, then idle
+      Reset : Bool;
+      Recipe : "UDT_Recipe";
+      TempsInBand : Bool;
+      FilmPresent : Bool;
+      AirOk : Bool;
+      WeigherReady : Bool;
+      WeigherDumpDone : Bool;
+      JawClosed : Bool;
+      JawOpen : Bool;
+      VSealBack : Bool;
+      KnifeHome : Bool;
+      PullDone : Bool;
+      PullError : Bool;
+      BagOutEdge : Bool;          // falling edge of discharge photo-eye
+   END_VAR
+   VAR_OUTPUT
+      Step : Int;
+      qJawClose : Bool;
+      qVSeal : Bool;
+      qKnife : Bool;
+      qAirBlast : Bool;
+      qDumpRequest : Bool;
+      qPullExecute : Bool;
+      qCoderTrig : Bool;
+      Waiting : Bool;             // amber lamp: starved / heating
+      BagDone : Bool;             // one-scan pulse, full bag released
+      EmptyDone : Bool;           // one-scan pulse, bag released without product
+      ToJawClose : Bool;          // timeout flags (one-scan pulses) -> FB_Alarms
+      ToJawOpen : Bool;
+      ToVSeal : Bool;
+      ToKnife : Bool;
+      BagJam : Bool;
+      CycleTime_ms : DInt;
+   END_VAR
+   VAR
+      tStep : TON_TIME;           // time in current step
+      tCycle : TON_TIME;
+      stepOld : Int;
+      charged : Bool;             // product is in the open bag above the jaws
+      dumpPending : Bool;
+      missedBags : Int;
+      bagExpected : Bool;
+      singleLatch : Bool;
+      dumpTimer : TON_TIME;
+      dumpPulse : TP_TIME;
+      coderPulse : TP_TIME;
+   END_VAR
+   VAR CONSTANT
+      T_ACTUATOR : Time := T#600ms;   // max. travel time of any cylinder
+   END_VAR
+BEGIN
+   #BagDone := FALSE;
+   #EmptyDone := FALSE;
+   // fault flags are one-scan pulses; FB_Alarms (called before this block in the
+   // next scan) latches them, so a single RESET clears alarm and sequence together
+   #ToJawClose := FALSE; #ToJawOpen := FALSE; #ToVSeal := FALSE; #ToKnife := FALSE;
+   #BagJam := FALSE;
+   IF #SingleCycle THEN
+      #singleLatch := TRUE;
+   END_IF;
+
+   // -------- supervision that applies in every step
+   IF #Abort AND #Step <> 900 THEN
+      #Step := 900;
+   END_IF;
+   IF #BagOutEdge THEN
+      #bagExpected := FALSE;
+      #missedBags := 0;
+   END_IF;
+
+   CASE #Step OF
+      0:
+         #Waiting := FALSE;
+         #qPullExecute := FALSE;
+         IF (#Run OR #singleLatch) AND NOT #CycleStop THEN
+            #Step := 10;
+         ELSIF #charged AND #Run = FALSE AND #CycleStop = FALSE AND #singleLatch = FALSE THEN
+            ;   // a charged bag stays open until the next start; operator is informed by HMI
+         END_IF;
+
+      10: // WAIT_CONDITIONS - nothing moves, safe place to wait
+         #Waiting := NOT (#TempsInBand AND (#WeigherReady OR #NoProduct OR NOT #Run));
+         IF #CycleStop OR NOT (#Run OR #singleLatch) THEN
+            // final closing cycle if product is waiting in the open bag
+            IF #charged AND #TempsInBand AND #FilmPresent AND #AirOk THEN
+               #Step := 20;
+            ELSE
+               #Step := 0;
+            END_IF;
+         ELSIF #TempsInBand AND #FilmPresent AND #AirOk AND #JawOpen AND #VSealBack AND #KnifeHome
+               AND (#WeigherReady OR #NoProduct)
+               // pacing: do not start earlier than the recipe speed allows
+               AND (#tCycle.ET >= DINT_TO_TIME(REAL_TO_DINT(60000.0 / #Recipe.SpeedSet_bpm)) OR #singleLatch) THEN
+            #Step := 20;
+         END_IF;
+
+      20: // PULL_FILM
+         #Waiting := FALSE;
+         #qPullExecute := TRUE;
+         IF #PullError THEN
+            #qPullExecute := FALSE;
+            #Step := 900;
+         ELSIF #PullDone THEN
+            #qPullExecute := FALSE;
+            #Step := 30;
+         END_IF;
+
+      30: // SETTLE
+         IF #tStep.ET >= DINT_TO_TIME(#Recipe.SettleTime_ms) THEN
+            #dumpPending := (#Run AND NOT #CycleStop AND NOT #NoProduct AND #WeigherReady)
+                            OR (#singleLatch AND NOT #NoProduct AND #WeigherReady);
+            #Step := 40;
+         END_IF;
+
+      40: // CLOSE_JAWS
+         #qJawClose := TRUE;
+         #qVSeal := TRUE;
+         IF #JawClosed THEN
+            #Step := 50;
+         ELSIF #tStep.ET >= #T_ACTUATOR THEN
+            #ToJawClose := TRUE;
+            #Step := 900;
+         END_IF;
+
+      50: // SEAL_DWELL - knife window inside the dwell
+         #qKnife := (#tStep.ET >= DINT_TO_TIME(#Recipe.KnifeDelay_ms))
+                    AND (#tStep.ET < DINT_TO_TIME(#Recipe.KnifeDelay_ms + #Recipe.KnifeTime_ms));
+         #qAirBlast := #Recipe.AirBlast_ms > 0 AND #tStep.ET < DINT_TO_TIME(#Recipe.AirBlast_ms);
+         IF #tStep.ET >= DINT_TO_TIME(#Recipe.SealTime_ms) THEN
+            #qKnife := FALSE;
+            #qAirBlast := FALSE;
+            #Step := 60;
+         END_IF;
+
+      60: // OPEN_JAWS
+         #qJawClose := FALSE;
+         #qVSeal := FALSE;
+         #qKnife := FALSE;
+         IF #JawOpen AND #VSealBack AND #KnifeHome THEN
+            #Step := 70;
+         ELSIF #tStep.ET >= #T_ACTUATOR THEN
+            #ToJawOpen := NOT #JawOpen;
+            #ToVSeal := NOT #VSealBack;
+            #ToKnife := NOT #KnifeHome;
+            #Step := 900;
+         END_IF;
+
+      70: // CYCLE_END - the bag below the jaws has just been cut free
+         IF #charged THEN
+            #BagDone := TRUE;
+         ELSE
+            #EmptyDone := TRUE;
+         END_IF;
+         // discharge supervision: a released bag must pass B11 before the next release
+         IF #bagExpected THEN
+            #missedBags := #missedBags + 1;
+         END_IF;
+         #bagExpected := TRUE;
+         #BagJam := #missedBags >= 2;
+         #charged := #dumpPending;        // what was dumped in step 40 is now in the new bag
+         #dumpPending := FALSE;
+         #CycleTime_ms := TIME_TO_DINT(#tCycle.ET);
+         #singleLatch := FALSE;
+         IF #BagJam THEN
+            #Step := 900;
+         ELSE
+            #Step := 10;
+         END_IF;
+
+      900: // ABORT - safe state: every actuator de-energised (jaws spring/air open)
+         #qJawClose := FALSE;
+         #qVSeal := FALSE;
+         #qKnife := FALSE;
+         #qAirBlast := FALSE;
+         #qPullExecute := FALSE;
+         #dumpPending := FALSE;
+         #singleLatch := FALSE;
+         #Waiting := FALSE;
+         IF #Reset AND NOT #Abort THEN
+            #missedBags := 0;
+            #bagExpected := FALSE;
+            #charged := FALSE;          // operator has cleared the jaw area (HMI instruction)
+            #Step := 0;
+         END_IF;
+   END_CASE;
+
+   // -------- weigher dump: issued DumpAdvance after the jaw-close command
+   #dumpTimer(IN := #Step = 40 OR #Step = 50, PT := DINT_TO_TIME(#Recipe.DumpAdvance_ms));
+   #dumpPulse(IN := #dumpTimer.Q AND #dumpPending, PT := T#100ms);
+   #qDumpRequest := #dumpPulse.Q;
+   #coderPulse(IN := #Step = 30 AND #Recipe.CoderEnable, PT := T#50ms);
+   #qCoderTrig := #coderPulse.Q;
+
+   // -------- step timer restarts on every step change; cycle timer on each pull
+   #tStep(IN := #Step = #stepOld, PT := T#1h);
+   #tCycle(IN := NOT (#Step = 20 AND #stepOld <> 20), PT := T#1h);
+   #stepOld := #Step;
+END_FUNCTION_BLOCK

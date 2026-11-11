@@ -1,0 +1,124 @@
+// ---------------------------------------------------------------------------
+// FB_ModeManager - operating modes and machine state.
+// Modes : 0 OFF  1 MANUAL  2 SETUP  3 AUTO  4 MAINTENANCE
+// States: 0 STOPPED 1 STARTING 2 READY 3 RUNNING 4 STOPPING 5 FAULT 6 ESTOP
+// Mode changes are accepted only in STOPPED / READY / FAULT with the cycle idle.
+// ---------------------------------------------------------------------------
+FUNCTION_BLOCK "FB_ModeManager"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      ModeRequest : Int;
+      PbStart : Bool;
+      PbStop : Bool;              // TRUE = stop requested (NC contact already inverted)
+      PbReset : Bool;
+      KeyMaint : Bool;
+      EstopOk : Bool;
+      GuardOk : Bool;
+      AlarmA : Bool;
+      AlarmB : Bool;
+      CycleStep : Int;
+      TempsInBand : Bool;
+      AxisReady : Bool;
+      BatchDone : Bool;
+      HeatersOn : Bool;
+      HeaterInhibit : Bool;       // any heater-related alarm (10-15, 17, 27, 31)
+   END_VAR
+   VAR_OUTPUT
+      Mode : Int;
+      State : Int;
+      RunCycle : Bool;            // -> FB_BagCycle.Run
+      CycleStop : Bool;
+      Abort : Bool;
+      MotionEnable : Bool;        // servo enable
+      ManualEnable : Bool;        // manual jogs allowed
+      HeaterEnable : Bool;
+      ResetPulse : Bool;
+   END_VAR
+   VAR
+      startEdge : R_TRIG;
+      resetEdge : R_TRIG;
+      tStarting : TON_TIME;
+   END_VAR
+BEGIN
+   #startEdge(CLK := #PbStart);
+   #resetEdge(CLK := #PbReset);
+   #ResetPulse := #resetEdge.Q;
+
+   // ---- mode selection
+   IF (#State = 0 OR #State = 2 OR #State = 5) AND (#CycleStep = 0 OR #CycleStep = 900) THEN
+      IF #ModeRequest = 4 AND NOT #KeyMaint THEN
+         ;                                   // maintenance needs the key switch
+      ELSIF #ModeRequest >= 0 AND #ModeRequest <= 4 THEN
+         #Mode := #ModeRequest;
+      END_IF;
+   END_IF;
+   IF #Mode = 4 AND NOT #KeyMaint THEN
+      #Mode := 0;
+   END_IF;
+
+   // ---- state machine
+   IF NOT #EstopOk THEN
+      #State := 6;
+   ELSIF #AlarmA OR NOT #GuardOk THEN
+      IF #State <> 6 THEN
+         #State := 5;
+      END_IF;
+   END_IF;
+
+   // the bag cycle has aborted on its own (timeout, pull error, bag jam)
+   IF #CycleStep = 900 AND (#State = 3 OR #State = 4) THEN
+      #State := 5;
+   END_IF;
+
+   CASE #State OF
+      0:  // STOPPED
+         IF #Mode = 3 AND #startEdge.Q THEN
+            #State := 1;
+         ELSIF #Mode = 2 OR #Mode = 1 OR #Mode = 4 THEN
+            #State := 2;
+         END_IF;
+      1:  // STARTING: servo on, heaters to temperature (max 15 min)
+         IF #PbStop THEN
+            #State := 0;
+         ELSIF #AxisReady AND #TempsInBand THEN
+            #State := 3;
+         ELSIF #tStarting.Q THEN
+            #State := 0;                      // alarm 16 is raised by FB_Alarms
+         END_IF;
+      2:  // READY (non-automatic modes)
+         IF #Mode = 0 OR #Mode = 3 THEN
+            #State := 0;
+         END_IF;
+      3:  // RUNNING
+         IF #PbStop OR #AlarmB OR #BatchDone THEN
+            #State := 4;
+         END_IF;
+      4:  // STOPPING: bag cycle finishes the bag and returns to step 0
+         IF #CycleStep = 0 THEN
+            #State := 0;
+         END_IF;
+      5:  // FAULT
+         IF #resetEdge.Q AND NOT #AlarmA AND #GuardOk AND #EstopOk THEN
+            #State := 0;
+         END_IF;
+      6:  // ESTOP - needs E-stop released AND reset; never restarts by itself
+         IF #EstopOk AND #resetEdge.Q THEN
+            IF #AlarmA OR NOT #GuardOk THEN
+               #State := 5;
+            ELSE
+               #State := 0;
+            END_IF;
+         END_IF;
+   END_CASE;
+   #tStarting(IN := #State = 1, PT := T#15m);
+
+   #Abort := (#State = 5) OR (#State = 6);
+   #RunCycle := #State = 3;
+   #CycleStop := #State = 4 OR #State = 0;
+   #MotionEnable := #EstopOk AND #GuardOk AND (#State >= 1 AND #State <= 4);
+   #ManualEnable := #EstopOk AND #GuardOk AND #State = 2 AND (#Mode = 1 OR #Mode = 4);
+   // heaters stay on in FAULT (e.g. guard open) so that production can resume,
+   // but never in ESTOP and never with a heater-related alarm
+   #HeaterEnable := #HeatersOn AND #EstopOk AND NOT #HeaterInhibit AND #Mode <> 0;
+END_FUNCTION_BLOCK

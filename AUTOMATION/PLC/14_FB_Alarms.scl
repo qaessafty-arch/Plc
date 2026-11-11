@@ -1,0 +1,56 @@
+// ---------------------------------------------------------------------------
+// FB_Alarms - latches alarm conditions, classifies them and packs HMI words.
+// Classes (alarms.csv): A immediate stop, B stop at end of cycle, C warning.
+// An alarm stays latched until its condition is gone AND reset is pressed.
+// ---------------------------------------------------------------------------
+FUNCTION_BLOCK "FB_Alarms"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Cond : Array[1..32] of Bool;      // raw conditions, index = alarm id
+      Reset : Bool;
+   END_VAR
+   VAR_OUTPUT
+      AnyA : Bool;
+      AnyB : Bool;
+      AnyC : Bool;
+   END_VAR
+   VAR
+      i : Int;
+      w : DWord;
+   END_VAR
+   VAR CONSTANT
+      // 1 = A, 2 = B, 3 = C  (must match alarms.csv)
+      CLASS : Array[1..32] of USInt := [1,1,1,2,2,1,1,1,1,1,1,1,1,1,1,2,
+                                        1,1,2,1,3,2,1,2,1,3,1,2,3,2,1,3];
+   END_VAR
+BEGIN
+   #AnyA := FALSE; #AnyB := FALSE; #AnyC := FALSE;
+   #w := 16#0;
+   FOR #i := 1 TO 32 DO
+      IF #Cond[#i] THEN
+         IF NOT "DB_Alarms".Active[#i] AND "DB_Alarms".FirstOut = 0 AND #CLASS[#i] < 3 THEN
+            "DB_Alarms".FirstOut := #i;
+         END_IF;
+         "DB_Alarms".Active[#i] := TRUE;
+      ELSIF #Reset OR #CLASS[#i] = 3 THEN          // warnings clear by themselves
+         "DB_Alarms".Active[#i] := FALSE;
+      END_IF;
+      IF "DB_Alarms".Active[#i] THEN
+         #w := #w OR SHL(IN := DWORD#1, N := INT_TO_UINT(#i - 1));
+         CASE #CLASS[#i] OF
+            1: #AnyA := TRUE;
+            2: #AnyB := TRUE;
+            3: #AnyC := TRUE;
+         END_CASE;
+      END_IF;
+   END_FOR;
+   IF #Reset AND NOT #AnyA AND NOT #AnyB THEN
+      "DB_Alarms".FirstOut := 0;
+   END_IF;
+   "DB_Alarms".Word1 := DWORD_TO_WORD(#w AND 16#FFFF);
+   "DB_Alarms".Word2 := DWORD_TO_WORD(SHR(IN := #w, N := 16));
+   "DB_Alarms".AnyClassA := #AnyA;
+   "DB_Alarms".AnyClassB := #AnyB;
+   "DB_Alarms".AnyClassC := #AnyC;
+END_FUNCTION_BLOCK

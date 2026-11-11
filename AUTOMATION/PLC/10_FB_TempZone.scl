@@ -1,0 +1,63 @@
+// ---------------------------------------------------------------------------
+// FB_TempZone - one sealing heater zone: PI control, time-proportioned SSR,
+// sensor-break and over-temperature supervision.
+// Call from a cyclic interrupt OB (OB30, 100 ms). Output period = 1 s.
+// For production, Siemens PID_Temp with auto-tune may replace the PI section;
+// the supervision logic below must be kept.
+// ---------------------------------------------------------------------------
+FUNCTION_BLOCK "FB_TempZone"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;              // heaters requested AND contactor closed
+      RawTemp : Int;              // SM 1231 TC: 0.1 degC per count, 32767 = wire break
+      Setpoint : Real;
+      Band : Real := 8.0;
+      MaxTemp : Real := 220.0;    // hard limit, not a recipe value
+      Kp : Real := 4.0;           // % per K      - starting values, tune on machine
+      Ti : Real := 60.0;          // s
+      CycleTime : Real := 0.1;    // s, = OB30 period
+   END_VAR
+   VAR_OUTPUT
+      Ssr : Bool;
+      Zone : "UDT_TempZone";
+   END_VAR
+   VAR
+      integ : Real;
+      pwmPhase : Real;
+      err : Real;
+      out : Real;
+   END_VAR
+BEGIN
+   // ---- measurement and plausibility
+   #Zone.SensorBreak := (#RawTemp >= 32767) OR (#RawTemp <= -2000);
+   IF NOT #Zone.SensorBreak THEN
+      #Zone.Actual := INT_TO_REAL(#RawTemp) / 10.0;
+   END_IF;
+   #Zone.Setpoint := LIMIT(MN := 0.0, IN := #Setpoint, MX := #MaxTemp - 10.0);
+   #Zone.OverTemp := #Zone.Actual > #MaxTemp;          // latched by FB_Alarms
+   #Zone.InBand := NOT #Zone.SensorBreak
+                   AND ABS(#Zone.Actual - #Zone.Setpoint) <= #Band;
+
+   // ---- PI with anti-windup (integrator frozen at output limits)
+   IF #Enable AND NOT #Zone.SensorBreak AND NOT #Zone.OverTemp THEN
+      #err := #Zone.Setpoint - #Zone.Actual;
+      #out := #Kp * #err + #integ;
+      IF (#out < 100.0 AND #out > 0.0) OR (#out >= 100.0 AND #err < 0.0) OR (#out <= 0.0 AND #err > 0.0) THEN
+         #integ := #integ + #Kp * #err * #CycleTime / #Ti;
+      END_IF;
+      #integ := LIMIT(MN := 0.0, IN := #integ, MX := 100.0);
+      #out := LIMIT(MN := 0.0, IN := #Kp * #err + #integ, MX := 100.0);
+   ELSE
+      #out := 0.0;
+      #integ := 0.0;
+   END_IF;
+   #Zone.Output_pct := #out;
+
+   // ---- time proportioning, 1 s period
+   #pwmPhase := #pwmPhase + #CycleTime;
+   IF #pwmPhase >= 1.0 THEN
+      #pwmPhase := 0.0;
+   END_IF;
+   #Ssr := #Enable AND (#pwmPhase < #out / 100.0);
+END_FUNCTION_BLOCK

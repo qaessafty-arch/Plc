@@ -1,0 +1,21 @@
+# Monitoring stack. Copy BACKEND/.env.example to BACKEND/.env and set real values first.
+# The PC running this sits on the machine network as a READ-ONLY OPC UA client.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: spm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: spm
+    volumes: [dbdata:/var/lib/postgresql/data]
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U spm"], interval: 5s, retries: 10}
+  api:
+    build: ./BACKEND
+    env_file: ./BACKEND/.env
+    depends_on: {db: {condition: service_healthy}}
+    ports: ["8000:8000"]
+  web:
+    build: ./FRONTEND
+    depends_on: [api]
+    ports: ["8080:80"]
+volumes: {dbdata: {}}

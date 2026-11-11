@@ -1,0 +1,59 @@
+// SPM-420  -  user data types.  TIA Portal V17+ external source (.udt)
+// STATUS: source code not yet compiled on a controller - see README.md
+TYPE "UDT_Recipe"
+VERSION : 0.1
+   STRUCT
+      Name : String[24];
+      TargetWeight_g : Real := 40.0;      // sent to weigher (information for PLC)
+      BagLength_mm : Real := 230.0;
+      BagWidth_mm : Real := 160.0;        // information: selects forming set
+      UseRegMark : Bool := FALSE;         // TRUE = printed film with eye mark
+      RegWindow_mm : Real := 15.0;        // +/- search window around BagLength
+      RegOffset_mm : Real := 0.0;         // cut position after mark
+      SpeedSet_bpm : Real := 40.0;
+      PullVelocity_mm_s : Real := 800.0;
+      PullAccel_mm_s2 : Real := 6000.0;
+      SealTime_ms : DInt := 450;
+      TempSet_Z1 : Real := 150.0;
+      TempSet_Z2 : Real := 150.0;
+      TempSet_Z3 : Real := 140.0;
+      TempBand : Real := 8.0;             // +/- degC allowed while running
+      KnifeDelay_ms : DInt := 200;        // after jaws closed
+      KnifeTime_ms : DInt := 100;
+      DumpAdvance_ms : DInt := 0;         // delay of weigher dump after jaw-close command
+      SettleTime_ms : DInt := 50;
+      AirBlast_ms : DInt := 0;            // 0 = off
+      N2Flush : Bool := FALSE;
+      ElevatorSpeed_pct : Real := 50.0;
+      TakeoffSpeed_pct : Real := 60.0;
+      CoderEnable : Bool := FALSE;
+   END_STRUCT;
+END_TYPE
+
+TYPE "UDT_TempZone"
+VERSION : 0.1
+   STRUCT
+      Actual : Real;
+      Setpoint : Real;
+      Output_pct : Real;
+      InBand : Bool;
+      OverTemp : Bool;
+      SensorBreak : Bool;
+   END_STRUCT;
+END_TYPE
+
+TYPE "UDT_Counters"
+VERSION : 0.1
+   STRUCT
+      BagsTotal : DInt;       // retentive lifetime counter
+      BagsBatch : DInt;
+      BagsShift : DInt;
+      EmptyCycles : DInt;     // film pulled without product
+      Faults : DInt;
+      RunTime_s : DInt;
+      StopTime_s : DInt;
+      BatchTarget : DInt;     // 0 = endless
+      ActualSpeed_bpm : Real;
+      LastCycle_ms : DInt;
+   END_STRUCT;
+END_TYPE

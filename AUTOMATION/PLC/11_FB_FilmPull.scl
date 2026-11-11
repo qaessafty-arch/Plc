@@ -1,0 +1,109 @@
+// ---------------------------------------------------------------------------
+// FB_FilmPull - indexes one bag length with the V90 servo.
+// Axis: technology object "Axis_FilmPull" (TO_PositioningAxis, PROFIdrive
+// telegram 3, user unit mm, modulo OFF). One call = one index.
+//
+// Plain film : relative move of BagLength.
+// Printed film: relative move of BagLength + RegWindow; the eye-mark edge
+//   (hardware interrupt OB40 stores "DB_Machine".FilmPosition at the edge in
+//   #MarkPosition and sets #MarkSeen) retargets the move to
+//   MarkPosition + RegOffset. If no mark is seen the move simply completes at
+//   the window end and MarkMissed is reported.
+// ---------------------------------------------------------------------------
+FUNCTION_BLOCK "FB_FilmPull"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Execute : Bool;             // rising edge starts an index
+      Enable : Bool;              // safety OK and mode allows motion
+      Recipe : "UDT_Recipe";
+      MarkSeen : Bool;            // set by OB40, reset here
+      MarkPosition : Real;
+      JogFwd : Bool;
+      JogRev : Bool;
+      Reset : Bool;
+   END_VAR
+   VAR_OUTPUT
+      Done : Bool;
+      Busy : Bool;
+      Error : Bool;
+      MarkMissed : Bool;
+      AxisReady : Bool;
+      PulledLength : Real;
+   END_VAR
+   VAR
+      mcPower : MC_Power;
+      mcReset : MC_Reset;
+      mcMove : MC_MoveRelative;
+      mcRetarget : MC_MoveAbsolute;
+      mcJog : MC_MoveJog;
+      mcHalt : MC_Halt;
+      step : Int;                 // 0 idle, 10 moving, 20 retargeted, 30 done, 90 error
+      startPos : Real;
+      execOld : Bool;
+      watchdog : TON_TIME;
+   END_VAR
+BEGIN
+   #mcPower(Axis := "Axis_FilmPull", Enable := #Enable, StartMode := 1, StopMode := 0);
+   #mcReset(Axis := "Axis_FilmPull", Execute := #Reset);
+   #AxisReady := #mcPower.Status AND NOT #mcPower.Error;
+
+   // jog only when no automatic index is active (MANUAL / SETUP threading)
+   #mcJog(Axis := "Axis_FilmPull",
+          JogForward := #JogFwd AND #step = 0 AND #AxisReady,
+          JogBackward := #JogRev AND #step = 0 AND #AxisReady,
+          Velocity := 100.0);
+
+   CASE #step OF
+      0:  // idle
+         #Busy := FALSE;
+         IF #Execute AND NOT #execOld AND #AxisReady THEN
+            #startPos := "Axis_FilmPull".ActualPosition;
+            #Done := FALSE; #Error := FALSE; #MarkMissed := FALSE;
+            #step := 10;
+         END_IF;
+      10: // main move
+         #Busy := TRUE;
+         IF #Recipe.UseRegMark AND #MarkSeen
+            AND (#MarkPosition - #startPos) >= (#Recipe.BagLength_mm - #Recipe.RegWindow_mm) THEN
+            #step := 20;
+         ELSIF #mcMove.Done THEN
+            #MarkMissed := #Recipe.UseRegMark;
+            #step := 30;
+         ELSIF #mcMove.Error OR #mcMove.CommandAborted OR #watchdog.Q OR NOT #Enable THEN
+            #step := 90;
+         END_IF;
+      20: // retarget on mark
+         IF #mcRetarget.Done THEN
+            #step := 30;
+         ELSIF #mcRetarget.Error OR #watchdog.Q THEN
+            #step := 90;
+         END_IF;
+      30: // done - wait for Execute to drop
+         #Busy := FALSE;
+         #Done := TRUE;
+         #PulledLength := "Axis_FilmPull".ActualPosition - #startPos;
+         IF NOT #Execute THEN
+            #Done := FALSE;
+            #step := 0;
+         END_IF;
+      90: // error
+         #Busy := FALSE;
+         #Error := TRUE;
+         IF #Reset OR NOT #Execute THEN
+            #Error := FALSE;        // alarm 19 is already latched by FB_Alarms
+            #step := 0;
+         END_IF;
+   END_CASE;
+
+   #mcMove(Axis := "Axis_FilmPull", Execute := #step = 10,
+           Distance := #Recipe.BagLength_mm + SEL(G := #Recipe.UseRegMark, IN0 := 0.0, IN1 := #Recipe.RegWindow_mm),
+           Velocity := #Recipe.PullVelocity_mm_s);
+   #mcRetarget(Axis := "Axis_FilmPull", Execute := #step = 20,
+               Position := #MarkPosition + #Recipe.RegOffset_mm,
+               Velocity := #Recipe.PullVelocity_mm_s);
+   #mcHalt(Axis := "Axis_FilmPull", Execute := #step = 90);
+   // index must finish within 3 s whatever the recipe
+   #watchdog(IN := #step = 10 OR #step = 20, PT := T#3s);
+   #execOld := #Execute;
+END_FUNCTION_BLOCK

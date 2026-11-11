@@ -1,0 +1,395 @@
+{
+ "S01 normal automatic production": {
+  "result": {
+   "sim_seconds": 120,
+   "bags_plc": 78,
+   "bags_plant_filled": 78,
+   "empty_plc": 1,
+   "mean_period_s": 1.502,
+   "speed_bpm": 39.9,
+   "weights": {
+    "n": 78,
+    "mean": 40.41,
+    "sd": 0.48,
+    "min": 39.57,
+    "max": 42.49,
+    "within_10pct": 100.0
+   },
+   "bag_length_mm": [
+    230.0,
+    230.0
+   ],
+   "product_in_seal_events": 0,
+   "alarms": [],
+   "state": 3
+  },
+  "checks": [
+   [
+    "PLC bag count equals filled bags in plant (+/-1 in flight)",
+    true
+   ],
+   [
+    "no product caught in the seal",
+    true
+   ],
+   [
+    "all filled bags within +/-10 % of target",
+    true
+   ],
+   [
+    "speed is paced to the 40 bags/min recipe value (+/-0.5)",
+    true
+   ],
+   [
+    "bag length 230 +/-1 mm",
+    true
+   ],
+   [
+    "no alarm (warnings 21/26/32 allowed)",
+    true
+   ],
+   [
+    "exactly one empty leader bag",
+    true
+   ]
+  ]
+ },
+ "S02 cold start / warm-up": {
+  "result": {
+   "time_to_running_min": 4.9,
+   "peak_temp_C": 154.5,
+   "setpoints": [
+    150.0,
+    150.0,
+    140.0
+   ],
+   "bags_after_60s": 38
+  },
+  "checks": [
+   [
+    "reaches RUNNING without alarm 16",
+    true
+   ],
+   [
+    "overshoot below 15 K",
+    true
+   ],
+   [
+    "no bag made before temperatures in band",
+    true
+   ]
+  ]
+ },
+ "S03 empty product hopper": {
+  "result": {
+   "bags_before": 6,
+   "bags_during_starvation": 1,
+   "alarms_during": [
+    21
+   ],
+   "amber_lamp": true,
+   "film_wasted_mm": 0.0,
+   "bags_after_refill": 6,
+   "state": 3
+  },
+  "checks": [
+   [
+    "starved warning 21 raised",
+    true
+   ],
+   [
+    "machine waits: no film pulled while starved",
+    true
+   ],
+   [
+    "stays in RUNNING (no fault)",
+    true
+   ],
+   [
+    "resumes by itself after refill",
+    true
+   ],
+   [
+    "no empty bags produced while starved",
+    true
+   ]
+  ]
+ },
+ "S04 missing packaging film": {
+  "result": {
+   "alarms": [
+    4
+   ],
+   "state_after": 0,
+   "cycle_step": 0,
+   "jaws_open": true,
+   "state_after_reset": 0,
+   "bags": 14,
+   "charged_open_bag": false
+  },
+  "checks": [
+   [
+    "alarm 4 film end",
+    true
+   ],
+   [
+    "machine stopped (STOPPED)",
+    true
+   ],
+   [
+    "jaws open, cycle idle",
+    true
+   ],
+   [
+    "reset returns to STOPPED, no automatic restart",
+    true
+   ]
+  ]
+ },
+ "S05 incorrect product weight": {
+  "result": {
+   "weights_after_bias": {
+    "n": 11,
+    "mean": 32.23,
+    "sd": 0.39,
+    "min": 31.57,
+    "max": 32.88,
+    "within_10pct": 0.0
+   },
+   "alarms": [],
+   "state": 3
+  },
+  "checks": [
+   [
+    "FINDING: bagger PLC cannot see weight errors (no alarm, still RUNNING)",
+    true
+   ],
+   [
+    "bags are under weight in the plant",
+    true
+   ]
+  ]
+ },
+ "S06 jammed discharge / conveyor overload": {
+  "result": {
+   "bag_jam_alarms": [
+    22
+   ],
+   "state": 5,
+   "bags_made_into_jam": 3,
+   "jaws_open": true,
+   "conveyor_overload_alarms": [
+    25
+   ],
+   "conveyor_state": 5,
+   "conveyor_reaction_s": 0.2
+  },
+  "checks": [
+   [
+    "alarm 22 bag jam",
+    true
+   ],
+   [
+    "stops within 3 bags of the jam",
+    true
+   ],
+   [
+    "FAULT state, jaws open",
+    true
+   ],
+   [
+    "take-off overload -> alarm 25 and FAULT within 0.2 s",
+    true
+   ]
+  ]
+ },
+ "S07 film-pull servo fault": {
+  "result": {
+   "alarms": [
+    18
+   ],
+   "state": 5,
+   "jaws_open": true,
+   "state_after_reset": 0,
+   "bags_after_reset": 6
+  },
+  "checks": [
+   [
+    "alarm 18 or 19",
+    true
+   ],
+   [
+    "FAULT, jaws open",
+    true
+   ],
+   [
+    "after reset: STOPPED and no motion until START",
+    true
+   ]
+  ]
+ },
+ "S08 excessive sealing temperature (SSR short)": {
+  "result": {
+   "alarm_time_after_short_s": 223.6,
+   "alarms": [
+    10,
+    16
+   ],
+   "peak_temp_C": 221.0,
+   "heater_contactor": false,
+   "independent_cutout_tripped": false,
+   "state": 5
+  },
+  "checks": [
+   [
+    "alarm 10 over-temperature",
+    true
+   ],
+   [
+    "heater contactor dropped",
+    true
+   ],
+   [
+    "peak stays below cut-out 250 C",
+    true
+   ],
+   [
+    "machine in FAULT",
+    true
+   ]
+  ]
+ },
+ "S09 sensor failure (thermocouple, jaw sensor)": {
+  "result": {
+   "tc_break_alarms": [
+    14
+   ],
+   "tc_state": 5,
+   "zone2_output_pct": 0.0,
+   "jaw_stuck_alarms": [
+    6
+   ],
+   "jaw_state": 5,
+   "valves_off": true,
+   "alarms_after_single_reset": [],
+   "state_after_single_reset": 0
+  },
+  "checks": [
+   [
+    "thermocouple break -> alarm 14, zone output 0 %",
+    true
+   ],
+   [
+    "FAULT on TC break",
+    true
+   ],
+   [
+    "jaw not closing -> alarm 6 and FAULT",
+    true
+   ],
+   [
+    "valves de-energised",
+    true
+   ],
+   [
+    "one RESET press clears alarm and returns to STOPPED",
+    true
+   ]
+  ]
+ },
+ "S10 power interruption": {
+  "result": {
+   "alarms_after_restart": [
+    30
+   ],
+   "state_after_restart": 0,
+   "bags_made_without_start": 0,
+   "jaws_open": true,
+   "bags_before_start_pressed": 0,
+   "bags_after_restart": 10
+  },
+  "checks": [
+   [
+    "alarm 30 power restart",
+    true
+   ],
+   [
+    "no automatic restart",
+    true
+   ],
+   [
+    "production resumes only after RESET + START",
+    true
+   ]
+  ]
+ },
+ "S11 emergency stop during sealing": {
+  "result": {
+   "outputs_one_scan_after": {
+    "JawClose": false,
+    "Knife": false,
+    "HeaterCont": false
+   },
+   "state": 6,
+   "jaws_open_after_1s": true,
+   "heaters_off": true,
+   "state_after_release": 6,
+   "state_after_reset": 0,
+   "bags_after_start": 6
+  },
+  "checks": [
+   [
+    "PLC outputs off within 2 scans (hardware is faster and independent)",
+    true
+   ],
+   [
+    "state ESTOP",
+    true
+   ],
+   [
+    "jaws open, heaters off",
+    true
+   ],
+   [
+    "releasing the button does not restart",
+    true
+   ],
+   [
+    "reset alone does not restart",
+    true
+   ],
+   [
+    "START resumes production",
+    true
+   ]
+  ]
+ },
+ "S12 air loss / guard door": {
+  "result": {
+   "air_alarms": [
+    3
+   ],
+   "air_state": 5,
+   "guard_alarms": [
+    2
+   ],
+   "guard_state": 5,
+   "guard_heaters_kept": true,
+   "guard_jaws_open": true
+  },
+  "checks": [
+   [
+    "air loss -> alarm 3, FAULT",
+    true
+   ],
+   [
+    "guard open -> alarm 2, FAULT, jaws open",
+    true
+   ],
+   [
+    "heaters stay on with guard open (hot-surface hazard handled by guarding/labels)",
+    true
+   ]
+  ]
+ }
+}

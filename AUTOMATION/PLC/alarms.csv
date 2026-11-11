@@ -1,0 +1,33 @@
+id,tag,class,text,reaction,recovery
+1,almEstop,A,Emergency stop active,immediate stop - all outputs off - heaters off,release E-stop - press RESET - restart
+2,almGuardOpen,A,Guard door open,immediate stop of motion - heaters stay on,close door - press RESET
+3,almAirLow,A,Compressed air pressure low,stop at end of cycle - jaws open,restore air - RESET
+4,almFilmEnd,B,Film roll finished / film break,cycle stop before next pull,splice new roll - RESET - START
+5,almRegLost,B,Registration mark not found (3 consecutive bags),cycle stop,check sensor teach / film threading - RESET
+6,almJawCloseTo,A,Horizontal jaw did not close in time,abort cycle - jaws open,check air / obstruction / sensor B5
+7,almJawOpenTo,A,Horizontal jaw did not open in time,abort cycle - film pull inhibited,check valve Y1 / sensor B6
+8,almVSealTo,A,Vertical seal did not retract,abort cycle - film pull inhibited,check valve Y2 / sensor B7
+9,almKnifeTo,A,Knife did not return,abort cycle - film pull inhibited,check knife / sensor B8
+10,almTempHighZ1,A,Zone 1 (front jaw) over-temperature,heater contactor off - cycle stop,find cause (SSR short?) - cool down - RESET
+11,almTempHighZ2,A,Zone 2 (rear jaw) over-temperature,heater contactor off - cycle stop,as alarm 10
+12,almTempHighZ3,A,Zone 3 (vertical bar) over-temperature,heater contactor off - cycle stop,as alarm 10
+13,almTcBreakZ1,A,Zone 1 thermocouple break,zone output 0 % - cycle stop,replace thermocouple B30
+14,almTcBreakZ2,A,Zone 2 thermocouple break,zone output 0 % - cycle stop,replace thermocouple B31
+15,almTcBreakZ3,A,Zone 3 thermocouple break,zone output 0 % - cycle stop,replace thermocouple B32
+16,almTempLow,B,Sealing temperature outside tolerance band,cycle stop (no bad seals),wait for temperature - START
+17,almThermCutout,A,Independent thermal cut-out tripped,heater contactor dropped by hardware,manual reset at cut-out after cooling - investigate
+18,almServoFault,A,Film-pull servo drive fault,abort cycle,read drive fault code - RESET
+19,almPullError,B,Film pull did not complete / following error,cycle stop,check belt pressure / film path
+20,almWghFault,A,Weigher fault,cycle stop,see weigher panel
+21,almWghStarved,C,Weigher not ready (waiting for product),machine waits - amber lamp,check product supply
+22,almBagJam,B,No bag detected at discharge (2 consecutive),cycle stop,clear jaws / chute - RESET
+23,almChuteBlocked,A,Product blockage in infeed funnel,cycle stop - weigher dump inhibited,clear funnel - RESET
+24,almElevVfd,B,Elevator drive fault / overload,elevator stop - line continues until starved,clear jam - reset VFD
+25,almTakeoffVfd,A,Take-off conveyor drive fault / overload,cycle stop,clear jam - reset VFD
+26,almHopperLow,C,Infeed hopper low level,warning only,refill hopper
+27,almDcFuse,A,24 V branch protection tripped,cycle stop,find short circuit - reset fuse
+28,almDancer,B,Film tension fault (dancer at limit > 3 s),cycle stop,check unwind brake / roll
+29,almCoder,C,Date coder not ready,warning or stop (selectable),check coder
+30,almPowerRestart,B,Controller restarted during production,machine held in STOPPED,inspect jaws - discard partial bag - RESET
+31,almHeaterContFb,A,Heater contactor feedback mismatch (welded/failed),heaters disabled,replace contactor KM1
+32,almSealTempDev,C,Seal temperature deviation > band while running,warning then alarm 16,check thermocouple seating

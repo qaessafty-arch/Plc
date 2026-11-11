@@ -1,0 +1,86 @@
+{
+  "products": {
+    "chips_40": {
+      "tube_d": 101.9,
+      "film_w": 340.0,
+      "v_prod": 0.667,
+      "v_max": 1.127,
+      "fill": 0.592,
+      "ok": "OK"
+    },
+    "puffs_30": {
+      "tube_d": 101.9,
+      "film_w": 340.0,
+      "v_prod": 0.667,
+      "v_max": 1.204,
+      "fill": 0.553,
+      "ok": "OK"
+    },
+    "crackers_100": {
+      "tube_d": 89.1,
+      "film_w": 300.0,
+      "v_prod": 0.4,
+      "v_max": 0.73,
+      "fill": 0.548,
+      "ok": "OK"
+    },
+    "biscuits_150": {
+      "tube_d": 89.1,
+      "film_w": 300.0,
+      "v_prod": 0.429,
+      "v_max": 0.73,
+      "fill": 0.587,
+      "ok": "OK"
+    },
+    "nuts_200": {
+      "tube_d": 89.1,
+      "film_w": 300.0,
+      "v_prod": 0.333,
+      "v_max": 0.671,
+      "fill": 0.496,
+      "ok": "OK"
+    }
+  },
+  "pull_time": 0.421,
+  "mech_cycle": 1.221,
+  "mech_bpm": 49.1,
+  "drop_h": 1.9,
+  "t_lead": 0.62,
+  "theoretical_bpm": 49.1,
+  "cycle_rated": 1.5,
+  "servo": {
+    "T_peak": 0.465,
+    "T_rms": 0.247,
+    "rpm": 1273,
+    "J_load_kgcm2": 0.404
+  },
+  "air_nl_min": 189,
+  "heater_total_w": 1300,
+  "kg_h": 96.0,
+  "l_h": 1600,
+  "elev_l_h": 5102,
+  "phase_A": {
+    "L1": 9.4,
+    "L2": 6.9,
+    "L3": 7.6
+  },
+  "connected_kw": 4.69,
+  "demand_kw": 3.28,
+  "main_breaker_A": 16,
+  "dc_A": 3.86,
+  "film_g_bag": 3.56,
+  "film_kg_h": 7.26,
+  "roll_m": 2397,
+  "roll_min": 261,
+  "kwh": 4.39,
+  "cost_h": 25.84,
+  "envelope": {
+    "L": 4450,
+    "W": 1900.0,
+    "H": 3900,
+    "floor_L": 6050,
+    "floor_W": 4100.0,
+    "area": 24.8,
+    "ceiling": 4400
+  }
+}

@@ -1,0 +1,218 @@
+// ---------------------------------------------------------------------------
+// OB1 Main, OB30 temperature control (100 ms), OB40 registration mark,
+// OB100 startup.  Instance DBs: iDB_Mode, iDB_Cycle, iDB_Pull, iDB_Alarms,
+// iDB_Z1..Z3 (create as single instances when importing).
+// Safety functions (E-stop, guard doors, STO, heater cut-out) are HARD-WIRED;
+// this program only reads their status. Nothing here may be credited as a
+// safety function.
+// ---------------------------------------------------------------------------
+ORGANIZATION_BLOCK "Startup"
+TITLE = OB100
+VERSION : 0.1
+BEGIN
+   // never resume a cycle after power loss: all commands cleared, alarm 30 if we were running
+   "DB_Machine".CmdStart := FALSE;
+   "DB_Machine".CmdStop := FALSE;
+   "DB_Machine".CmdSingleCycle := FALSE;
+   "DB_Machine".ModeRequest := 0;
+   "DB_Machine".HeatersOn := FALSE;
+   "iDB_Cycle".Step := 0;
+   "iDB_Mode".State := 0;
+   "iDB_Mode".Mode := 0;
+   "M_PowerRestart" := "DB_Machine".WasRunningAtPowerOff;
+   "DB_Machine".WasRunningAtPowerOff := FALSE;
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK "RegMark_Interrupt"
+TITLE = OB40 - hardware interrupt, rising edge I0.0
+VERSION : 0.1
+BEGIN
+   "M_MarkPosition" := "Axis_FilmPull".ActualPosition;
+   "M_MarkSeen" := TRUE;
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK "TempControl"
+TITLE = OB30 - cyclic interrupt 100 ms
+VERSION : 0.1
+   VAR_TEMP
+      en : Bool;
+   END_VAR
+BEGIN
+   #en := "iDB_Mode".HeaterEnable AND "iHeaterContFb";
+   "iDB_Z1"(Enable := #en, RawTemp := "iTempZ1", Setpoint := "DB_Recipe".Active.TempSet_Z1,
+            Band := "DB_Recipe".Active.TempBand, Ssr => "qSsrZ1", Zone => "DB_Machine".Zone[1]);
+   "iDB_Z2"(Enable := #en, RawTemp := "iTempZ2", Setpoint := "DB_Recipe".Active.TempSet_Z2,
+            Band := "DB_Recipe".Active.TempBand, Ssr => "qSsrZ2", Zone => "DB_Machine".Zone[2]);
+   "iDB_Z3"(Enable := #en, RawTemp := "iTempZ3", Setpoint := "DB_Recipe".Active.TempSet_Z3,
+            Band := "DB_Recipe".Active.TempBand, Ssr => "qSsrZ3", Zone => "DB_Machine".Zone[3]);
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK "Main"
+TITLE = OB1
+VERSION : 0.1
+   VAR_TEMP
+      c : Array[1..32] of Bool;
+      tempsOk : Bool;
+      running : Bool;
+      i : Int;
+   END_VAR
+BEGIN
+   // ================= 1. inputs / derived signals
+   #tempsOk := "DB_Machine".Zone[1].InBand AND "DB_Machine".Zone[2].InBand AND "DB_Machine".Zone[3].InBand;
+   #running := "iDB_Mode".State = 3 OR "iDB_Mode".State = 4;
+   "DB_Machine".SafetyOk := "iEstopOk" AND "iGuardOk";
+   "R_BagOut"(CLK := NOT "iBagOut");                       // bag has left the photo-eye
+   "T_Dancer"(IN := ("iDancerHigh" AND "iDancerLow") OR ("iDancerHigh" AND NOT "qUnwindRun" AND #running), PT := T#3s);
+   "T_Starved"(IN := "iDB_Cycle".Step = 10 AND NOT "iWghReady" AND #running, PT := T#10s);
+   "T_TempLow"(IN := #running AND NOT #tempsOk, PT := T#5s);
+   "T_HeatCont"(IN := "qHeaterCont" <> "iHeaterContFb", PT := T#500ms);
+
+   // ================= 2. alarm conditions (index = id in alarms.csv)
+   // The reset edge is formed first: latched helper flags are cleared BEFORE the
+   // conditions are evaluated, so one press of RESET is enough.
+   "R_Reset"(CLK := "iPbReset" OR "DB_Machine".CmdReset);
+   IF "R_Reset".Q THEN
+      "M_PowerRestart" := FALSE;
+      "M_RegMissCount" := 0;
+   END_IF;
+   FOR #i := 1 TO 32 DO
+      #c[#i] := FALSE;
+   END_FOR;
+   #c[1] := NOT "iEstopOk";
+   #c[2] := NOT "iGuardOk" AND "iEstopOk";
+   #c[3] := NOT "iAirOk";
+   #c[4] := NOT "iFilmPresent";
+   #c[5] := "M_RegMissCount" >= 3;
+   #c[6] := "iDB_Cycle".ToJawClose;
+   #c[7] := "iDB_Cycle".ToJawOpen;
+   #c[8] := "iDB_Cycle".ToVSeal;
+   #c[9] := "iDB_Cycle".ToKnife;
+   #c[10] := "DB_Machine".Zone[1].OverTemp;
+   #c[11] := "DB_Machine".Zone[2].OverTemp;
+   #c[12] := "DB_Machine".Zone[3].OverTemp;
+   #c[13] := "DB_Machine".Zone[1].SensorBreak;
+   #c[14] := "DB_Machine".Zone[2].SensorBreak;
+   #c[15] := "DB_Machine".Zone[3].SensorBreak;
+   #c[16] := "T_TempLow".Q;
+   #c[17] := NOT "iThermCutoutOk";
+   #c[18] := "iDB_Mode".MotionEnable AND "Axis_FilmPull".StatusBits.Error;
+   #c[19] := "iDB_Pull".Error;
+   #c[20] := NOT "iWghNoFault";
+   #c[21] := "T_Starved".Q;
+   #c[22] := "iDB_Cycle".BagJam;
+   #c[23] := "iChuteBlocked";
+   #c[24] := NOT "iElevVfdOk";
+   #c[25] := NOT "iTakeoffVfdOk";
+   #c[26] := "iHopperLow";
+   #c[27] := NOT "iDcFuseOk";
+   #c[28] := "T_Dancer".Q;
+   #c[29] := "DB_Recipe".Active.CoderEnable AND NOT "iCoderReady";
+   #c[30] := "M_PowerRestart";
+   #c[31] := "T_HeatCont".Q;
+   #c[32] := #running AND NOT #tempsOk AND NOT "T_TempLow".Q;
+   "iDB_Alarms"(Cond := #c, Reset := "R_Reset".Q);
+
+   // ================= 3. modes and state
+   "iDB_Mode"(ModeRequest := "DB_Machine".ModeRequest,
+              PbStart := "iPbStart" OR "DB_Machine".CmdStart,
+              PbStop := NOT "iPbStop" OR "DB_Machine".CmdStop,
+              PbReset := "iPbReset" OR "DB_Machine".CmdReset,
+              KeyMaint := "iKeyMaint",
+              EstopOk := "iEstopOk", GuardOk := "iGuardOk",
+              AlarmA := "iDB_Alarms".AnyA, AlarmB := "iDB_Alarms".AnyB,
+              CycleStep := "iDB_Cycle".Step,
+              TempsInBand := #tempsOk,
+              AxisReady := "iDB_Pull".AxisReady,
+              BatchDone := "DB_Machine".Cnt.BatchTarget > 0 AND "DB_Machine".Cnt.BagsBatch >= "DB_Machine".Cnt.BatchTarget,
+              HeatersOn := "DB_Machine".HeatersOn,
+              HeaterInhibit := #c[10] OR #c[11] OR #c[12] OR #c[13] OR #c[14] OR #c[15] OR #c[17] OR #c[27] OR #c[31]
+                               OR "DB_Alarms".Active[10] OR "DB_Alarms".Active[11] OR "DB_Alarms".Active[12]
+                               OR "DB_Alarms".Active[17] OR "DB_Alarms".Active[31]);
+   "DB_Machine".Mode := "iDB_Mode".Mode;
+   "DB_Machine".State := "iDB_Mode".State;
+   "DB_Machine".CmdStart := FALSE; "DB_Machine".CmdStop := FALSE; "DB_Machine".CmdReset := FALSE;
+   "DB_Machine".WasRunningAtPowerOff := "iDB_Mode".State = 3;
+
+   // ================= 4. film pull and bag cycle
+   "iDB_Pull"(Execute := "iDB_Cycle".qPullExecute,
+              Enable := "iDB_Mode".MotionEnable,
+              Recipe := "DB_Recipe".Active,
+              MarkSeen := "M_MarkSeen", MarkPosition := "M_MarkPosition",
+              JogFwd := "DB_Machine".ManFilmFwd AND ("iDB_Mode".ManualEnable OR "iDB_Mode".Mode = 2),
+              JogRev := "DB_Machine".ManFilmRev AND "iDB_Mode".ManualEnable,
+              Reset := "iDB_Mode".ResetPulse);
+   "R_PullDone"(CLK := "iDB_Pull".Done);
+   IF "R_PullDone".Q THEN
+      "DB_Machine".LastBagLength_mm := "iDB_Pull".PulledLength;
+      IF "iDB_Pull".MarkMissed THEN
+         "M_RegMissCount" := "M_RegMissCount" + 1;
+      ELSE
+         "M_RegMissCount" := 0;
+      END_IF;
+      "M_MarkSeen" := FALSE;
+   END_IF;
+
+   "iDB_Cycle"(Run := "iDB_Mode".RunCycle,
+               SingleCycle := "DB_Machine".CmdSingleCycle AND "iDB_Mode".Mode = 2 AND "iDB_Mode".State = 2,
+               NoProduct := "DB_Machine".CmdEmptyBag AND "iDB_Mode".Mode = 2,
+               Abort := "iDB_Mode".Abort,
+               CycleStop := "iDB_Mode".CycleStop AND NOT ("iDB_Mode".Mode = 2),
+               Reset := "iDB_Mode".ResetPulse,
+               Recipe := "DB_Recipe".Active,
+               TempsInBand := #tempsOk, FilmPresent := "iFilmPresent", AirOk := "iAirOk",
+               WeigherReady := "iWghReady" AND "iWghNoFault", WeigherDumpDone := "iWghDumpDone",
+               JawClosed := "iJawClosed", JawOpen := "iJawOpen", VSealBack := "iVSealBack", KnifeHome := "iKnifeHome",
+               PullDone := "iDB_Pull".Done, PullError := "iDB_Pull".Error,
+               BagOutEdge := "R_BagOut".Q);
+   "DB_Machine".CmdSingleCycle := FALSE;
+   "DB_Machine".CycleStep := "iDB_Cycle".Step;
+
+   // ================= 5. outputs (automatic OR guarded manual)
+   "qJawClose" := "iDB_Cycle".qJawClose OR ("DB_Machine".ManJaw AND "iDB_Mode".ManualEnable AND "iDB_Cycle".Step = 0);
+   "qVSeal" := "iDB_Cycle".qVSeal OR ("DB_Machine".ManVSeal AND "iDB_Mode".ManualEnable AND "iDB_Cycle".Step = 0);
+   // knife only with jaws closed, also in manual
+   "qKnife" := ("iDB_Cycle".qKnife OR ("DB_Machine".ManKnife AND "iDB_Mode".ManualEnable)) AND "iJawClosed";
+   "qAirBlast" := "iDB_Cycle".qAirBlast;
+   "qWghDumpReq" := "iDB_Cycle".qDumpRequest OR ("DB_Machine".ManWeigherDump AND "iDB_Mode".ManualEnable AND "iJawClosed");
+   "qCoderTrig" := "iDB_Cycle".qCoderTrig;
+   "qN2Valve" := "DB_Recipe".Active.N2Flush AND #running;
+   "qWghEnable" := #running AND NOT "iChuteBlocked";
+   "qHeaterCont" := "iDB_Mode".HeaterEnable;
+
+   // film unwind follows the dancer (hysteresis between the two sensors)
+   IF "iDancerHigh" AND "iDB_Mode".MotionEnable THEN
+      "qUnwindRun" := TRUE;
+   ELSIF "iDancerLow" OR NOT "iDB_Mode".MotionEnable THEN
+      "qUnwindRun" := FALSE;
+   END_IF;
+
+   // conveyors: take-off first on / last off, elevator on weigher demand
+   "T_TakeoffOff"(IN := #running, PT := T#5s);
+   "qTakeoffRun" := ("T_TakeoffOff".Q AND "iTakeoffVfdOk") OR ("DB_Machine".ManTakeoff AND "iDB_Mode".ManualEnable);
+   "qElevRun" := (#running AND "iWghFeedReq" AND "iElevVfdOk" AND "iWghNoFault")
+                 OR ("DB_Machine".ManElevator AND "iDB_Mode".ManualEnable);
+   "qFeederRun" := "qElevRun" OR ("DB_Machine".ManFeeder AND "iDB_Mode".ManualEnable);
+   "qElevSpeed" := REAL_TO_INT("DB_Recipe".Active.ElevatorSpeed_pct * 276.48);
+   "qTakeoffSpeed" := REAL_TO_INT("DB_Recipe".Active.TakeoffSpeed_pct * 276.48);
+
+   // ================= 6. counters and signalling
+   IF "iDB_Cycle".BagDone THEN
+      "DB_Machine".Cnt.BagsTotal := "DB_Machine".Cnt.BagsTotal + 1;
+      "DB_Machine".Cnt.BagsBatch := "DB_Machine".Cnt.BagsBatch + 1;
+      "DB_Machine".Cnt.BagsShift := "DB_Machine".Cnt.BagsShift + 1;
+      "DB_Machine".Cnt.LastCycle_ms := "iDB_Cycle".CycleTime_ms;
+      IF "iDB_Cycle".CycleTime_ms > 0 THEN
+         "DB_Machine".Cnt.ActualSpeed_bpm := 60000.0 / DINT_TO_REAL("iDB_Cycle".CycleTime_ms);
+      END_IF;
+   END_IF;
+   IF "iDB_Cycle".EmptyDone THEN
+      "DB_Machine".Cnt.EmptyCycles := "DB_Machine".Cnt.EmptyCycles + 1;
+   END_IF;
+   "qLampGreen" := "iDB_Mode".State = 3 AND NOT "iDB_Cycle".Waiting;
+   "qLampAmber" := "iDB_Cycle".Waiting OR "iDB_Alarms".AnyC OR "iDB_Mode".State = 1 OR ("iDB_Mode".State = 4 AND "Clock_1Hz");
+   "qLampRed" := "iDB_Mode".State >= 5 AND ("Clock_1Hz" OR "iDB_Mode".State = 5);
+   "qBuzzer" := "iDB_Mode".State >= 5 AND "Clock_1Hz" AND NOT "M_BuzzerAck";
+   "qLampReset" := "iDB_Mode".State >= 5 AND "Clock_1Hz";
+   "qLampStart" := "iDB_Mode".State = 3 OR ("iDB_Mode".State = 0 AND "iDB_Mode".Mode = 3 AND "Clock_1Hz");
+   "DB_Machine".ReadyToRun := "iDB_Mode".State = 0 AND "iDB_Mode".Mode = 3 AND NOT "iDB_Alarms".AnyA AND NOT "iDB_Alarms".AnyB;
+END_ORGANIZATION_BLOCK

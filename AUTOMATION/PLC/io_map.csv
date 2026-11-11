@@ -1,0 +1,66 @@
+address,tag,type,device,description,signal,safety_related,notes
+I0.0,iRegMark,DI,B10,Film registration (eye-mark) contrast sensor,24V PNP fast,no,hardware interrupt OB40 rising edge
+I0.1,iPbStart,DI,S1,Start push-button (green),24V NO,no,
+I0.2,iPbStop,DI,S2,Stop push-button (red),24V NC,no,wire-break = stop
+I0.3,iPbReset,DI,S3,Reset push-button (blue),24V NO,no,also wired to safety relay reset circuit
+I0.4,iEstopOk,DI,K1 (13-14 aux),E-stop safety relay healthy,24V,status only,safety function itself is hard-wired
+I0.5,iGuardOk,DI,K2 (aux),Guard-door safety relay healthy,24V,status only,
+I0.6,iAirOk,DI,B1,Air pressure switch >= 0.5 MPa,24V NO,no,
+I0.7,iFilmPresent,DI,B2,Film run-out sensor (diffuse photo),24V PNP,no,1 = film present
+I1.0,iDancerHigh,DI,B3,Dancer arm upper limit (inductive),24V PNP,no,start unwind
+I1.1,iDancerLow,DI,B4,Dancer arm lower limit (inductive),24V PNP,no,stop unwind
+I1.2,iJawClosed,DI,B5,Jaw cylinder reed switch - closed,24V,no,
+I1.3,iJawOpen,DI,B6,Jaw cylinder reed switch - open,24V,no,
+I1.4,iVSealBack,DI,B7,Vertical seal cylinder retracted,24V,no,
+I1.5,iKnifeHome,DI,B8,Knife cylinder retracted,24V,no,
+I8.0,iWghReady,DI,X20.1,Weigher: combination ready,24V via opto/relay,no,volt-free contact from weigher
+I8.1,iWghDumpDone,DI,X20.2,Weigher: dump completed pulse,24V,no,
+I8.2,iWghNoFault,DI,X20.3,Weigher: no fault (fail-safe 1 = OK),24V,no,
+I8.3,iBagOut,DI,B11,Bag discharge photo-eye (retro-reflective),24V PNP,no,bag counted on falling edge
+I8.4,iChuteBlocked,DI,B12,Infeed funnel blockage sensor (capacitive),24V PNP,no,
+I8.5,iHopperLow,DI,B13,Infeed hopper low level,24V PNP,no,warning only
+I8.6,iWghFeedReq,DI,X20.4,Weigher: product demand (top cone low),24V,no,runs elevator
+I8.7,iElevVfdOk,DI,T2,Elevator VFD ready / no fault relay,24V,no,
+I9.0,iTakeoffVfdOk,DI,T3,Take-off VFD ready / no fault relay,24V,no,
+I9.1,iHeaterContFb,DI,KM1 (NC mirror),Heater contactor feedback,24V,no,mismatch alarm
+I9.2,iThermCutoutOk,DI,F20-F22,Bimetal over-temperature cut-out chain,24V NC series,yes (independent of PLC),also in KM1 coil circuit
+I9.3,iDcFuseOk,DI,F10-F13,24 V electronic fuse common alarm,24V,no,
+I9.4,iKeyMaint,DI,S4,Maintenance key switch,24V,no,enables MAINTENANCE mode with reduced functions
+I9.5,iCoderReady,DI,X21.1,Date coder ready,24V,no,optional
+I9.6,iDoorFrontInfo,DI,B20 (aux),Front door closed - information channel,24V,no,for alarm text only
+I9.7,iDoorRearInfo,DI,B21 (aux),Rear door closed - information channel,24V,no,
+Q0.0,qSsrZ1,DO,V1,SSR heater zone 1 (front jaw),24V PWM,no,time proportioning 1 s period
+Q0.1,qSsrZ2,DO,V2,SSR heater zone 2 (rear jaw),24V PWM,no,
+Q0.2,qSsrZ3,DO,V3,SSR heater zone 3 (vertical bar),24V PWM,no,
+Q0.3,qJawClose,DO,Y1,Jaw close valve 5/2 spring return,24V 2.5W,supplied from safe 24V bus,de-energised = open
+Q0.4,qVSeal,DO,Y2,Vertical seal valve 5/2 spring return,24V,supplied from safe 24V bus,
+Q0.5,qKnife,DO,Y3,Knife valve 5/2 spring return,24V,supplied from safe 24V bus,
+Q0.6,qWghDumpReq,DO,X20.5,Weigher dump request,24V via relay,no,
+Q0.7,qCoderTrig,DO,X21.2,Date coder print trigger,24V,no,
+Q1.0,qUnwindRun,DO,KA1,Film unwind motor / brake release,24V relay,no,
+Q1.1,qAirBlast,DO,Y5,Bag deflate / air blast valve,24V,supplied from safe 24V bus,option
+Q8.0,qHeaterCont,DO,KM1,Heater contactor enable,24V relay,no (cut-out + E-stop in series hard-wired),
+Q8.1,qElevRun,DO,T2 DI1,Elevator VFD run,24V,no,
+Q8.2,qTakeoffRun,DO,T3 DI1,Take-off conveyor VFD run,24V,no,
+Q8.3,qFeederRun,DO,KA2,Hopper vibratory feeder enable,24V relay,no,
+Q8.4,qLampGreen,DO,H1,Stack light green - running,24V,no,
+Q8.5,qLampAmber,DO,H1,Stack light amber - warning / waiting,24V,no,
+Q8.6,qLampRed,DO,H1,Stack light red - fault,24V,no,
+Q8.7,qBuzzer,DO,H1,Buzzer,24V,no,
+Q9.0,qN2Valve,DO,Y6,Nitrogen flush valve,24V,no,option
+Q9.1,qLampReset,DO,S3 lamp,Reset required lamp (blue),24V,no,
+Q9.2,qWghEnable,DO,X20.6,Weigher run enable,24V via relay,no,
+Q9.3,qLampStart,DO,S1 lamp,Start lamp (green),24V,no,
+Q9.4,spare,DO,,Spare,,,
+Q9.5,spare,DO,,Spare,,,
+Q9.6,spare,DO,,Spare,,,
+Q9.7,spare,DO,,Spare,,,
+IW96,iTempZ1,AI TC,B30,Thermocouple type K - front jaw,TC,no,SM 1231 TC ch0
+IW98,iTempZ2,AI TC,B31,Thermocouple type K - rear jaw,TC,no,ch1
+IW100,iTempZ3,AI TC,B32,Thermocouple type K - vertical bar,TC,no,ch2
+IW102,iTempCab,AI TC,B33,Thermocouple type K - cabinet air,TC,no,ch3 (diagnostic)
+IW64,iAirPressure,AI 0-10V,B1a,Air pressure transmitter 0-1 MPa,0-10 V,no,CPU AI0 (optional)
+QW64,qElevSpeed,AO 0-20mA,T2 AI,Elevator speed reference,4-20 mA,no,CPU AO0
+QW66,qTakeoffSpeed,AO 0-20mA,T3 AI,Take-off speed reference,4-20 mA,no,CPU AO1
+PN,Axis_FilmPull,PROFINET,T1,SINAMICS V90 PN film-pull servo,PROFIdrive telegram 3,STO hard-wired to K1/K2,technology object TO_PositioningAxis
+PN,HMI_1,PROFINET,A2,KTP700 Basic operator panel,S7 HMI connection,no,

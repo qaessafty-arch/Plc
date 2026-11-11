@@ -1,0 +1,29 @@
+cable,from,to,type,cores_mm2,length_m_est,note
+W1,Site supply,Q0,H07RN-F / NYY,5G4,site,by installer; protect per site rules
+W2,X1:1-2 (F1),Weigher cabinet,Oelflex 110 class,3G1.5,6,
+W3,T1 U V W,M1 film servo,MOTION-CONNECT 300 power,4G0.75 shielded,5,pre-assembled
+W4,T1 X8,M1 encoder,MOTION-CONNECT 300 encoder,pre-assembled,5,
+W5,T2,M2 elevator motor,shielded motor cable,4G1.5,10,shield 360 deg both ends
+W6,T3,M3 take-off motor,shielded motor cable,4G1.5,5,
+W7,X2:1-2,Heaters Z1 (front jaw),PTFE/glass-silk high-temp flexible,3G1.0,3,drag chain; plug at jaw
+W8,X2:3-4,Heaters Z2 (rear jaw),PTFE/glass-silk high-temp flexible,3G1.0,3,drag chain; plug at jaw
+W9,X2:5-6,Heater Z3 (vertical bar),PTFE/glass-silk high-temp flexible,3G1.0,3,
+W10,A1 SM1231 ch0,B30 thermocouple Z1,type K extension shielded,2x0.5,3,
+W11,A1 SM1231 ch1,B31 thermocouple Z2,type K extension shielded,2x0.5,3,
+W12,A1 SM1231 ch2,B32 thermocouple Z3,type K extension shielded,2x0.5,3,
+W13,X11,F20-F22 bimetal chain,high-temp flexible,2x0.75,3,series NC
+W14,X12,Valve manifold Y1-Y5 + Y0,control cable numbered cores,12x0.5,3,or multipole connector
+W15,X10,B10 registration sensor,M12 4-pin shielded,4x0.34,5,
+W16,X10,B2 film run-out,M12 4-pin,4x0.34,5,
+W17,X10,B3/B4 dancer,M12 4-pin x2,4x0.34,4,
+W18,X10,B5-B8 cylinder switches,M8 3-pin x4,3x0.25,3,
+W19,X10,B11 bag discharge photo-eye,M12 4-pin,4x0.34,5,
+W20,X10,B12 funnel blockage / B13 hopper low,M12 4-pin x2,4x0.34,5 / 10,
+W21,X13,S10-S13 E-stops,control cable shielded pairs,8x0.75,25 total,two channels separated in the cable
+W22,X13,B20/B21 door switches,M12 8-pin,8x0.25,5,per switch maker
+W23,X20,Weigher interface,control cable numbered,12x0.5,6,volt-free both sides
+W24,X21,Date coder,control cable,4x0.5,4,option
+W25,X14,H1 stack light,control cable,5x0.5,3,
+W26,X14,S1-S4 operator buttons (HMI station),control cable,12x0.5,3,
+W27,Switch,A2 HMI / T1 / PC,Industrial Ethernet Cat5e,4x2xAWG22,3 / 2 / site,
+W28,PE bar,"frame, platform, elevator, weigher, conveyor",H07V-K green/yellow,1x10 (frame) 1x6 (others),as required,protective bonding

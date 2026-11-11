@@ -1,0 +1,68 @@
+// SPM-420 global data blocks (external source .db)
+DATA_BLOCK "DB_Recipe"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+   VAR RETAIN
+      Active : "UDT_Recipe";
+      Store : Array[1..20] of "UDT_Recipe";
+      ActiveIndex : Int := 1;
+   END_VAR
+BEGIN
+   Active.Name := 'Potato chips 40 g';
+END_DATA_BLOCK
+
+DATA_BLOCK "DB_Machine"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+   VAR
+      Mode : Int;                 // 0 OFF, 1 MANUAL, 2 SETUP, 3 AUTO, 4 MAINTENANCE
+      ModeRequest : Int;          // from HMI
+      State : Int;                // 0 STOPPED 1 STARTING 2 READY 3 RUNNING 4 STOPPING 5 FAULT 6 ESTOP
+      CycleStep : Int;            // FB_BagCycle step number
+      CmdStart : Bool;            // HMI commands (one-shot, reset by PLC)
+      CmdStop : Bool;
+      CmdReset : Bool;
+      CmdSingleCycle : Bool;      // SETUP mode: one bag
+      CmdEmptyBag : Bool;         // SETUP mode: bag without product
+      HeatersOn : Bool;           // HMI switch
+      SafetyOk : Bool;
+      ReadyToRun : Bool;
+      Zone : Array[1..3] of "UDT_TempZone";
+      AirPressure_MPa : Real;
+      FilmPosition_mm : Real;
+      LastBagLength_mm : Real;
+      // manual-mode jog commands (active only in MANUAL / MAINTENANCE with guards closed)
+      ManJaw : Bool;
+      ManVSeal : Bool;
+      ManKnife : Bool;
+      ManFilmFwd : Bool;
+      ManFilmRev : Bool;
+      ManElevator : Bool;
+      ManTakeoff : Bool;
+      ManFeeder : Bool;
+      ManWeigherDump : Bool;
+   END_VAR
+   VAR RETAIN
+      Cnt : "UDT_Counters";
+      WasRunningAtPowerOff : Bool;
+   END_VAR
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "DB_Alarms"
+{ S7_Optimized_Access := 'FALSE' }      // standard access: HMI bit alarms use word addressing
+VERSION : 0.1
+NON_RETAIN
+   STRUCT
+      Active : Array[1..32] of Bool;     // index = alarm id in alarms.csv
+      Word1 : Word;                      // packed ids 1..16 for HMI discrete alarms
+      Word2 : Word;                      // packed ids 17..32
+      AnyClassA : Bool;                  // immediate stop
+      AnyClassB : Bool;                  // cycle stop
+      AnyClassC : Bool;                  // warning
+      FirstOut : Int;                    // first alarm of the current fault event
+   END_STRUCT;
+BEGIN
+END_DATA_BLOCK

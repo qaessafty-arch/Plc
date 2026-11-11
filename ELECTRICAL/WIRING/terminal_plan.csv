@@ -1,0 +1,12 @@
+strip,terminals,function,voltage,colour_of_wiring
+X1,1-6 + PE,AC outgoing: weigher / socket / feeder,230 V AC,black (L) light-blue (N)
+X2,1-6 + PE,Heater zones Z1-Z3,230 V AC switched,black / light-blue
+X3,U V W PE x2,VFD motor outputs (shield clamps adjacent),3x230 V AC,black
+X10,+ / 0V / signal x 20 (3-level sensor terminals),Sensors,24 V DC,dark blue (+ and signal) blue-white (0 V)
+X11,1-4,Bimetal cut-out chain,24 V DC,dark blue
+X12,1-12,Valves Y0-Y5 (safe 24 V bus),24 V DC,dark blue
+X13,1-16,E-stop and door switch channels,24 V DC,dark blue (safety circuits may use orange if always-live from external source - none here)
+X14,1-16,Operator station and stack light,24 V DC,dark blue
+X20,1-12,Weigher interface (volt-free),24 V DC,dark blue
+X21,1-4,Date coder interface,24 V DC,dark blue
+PE,bar,Protective earth,-,green/yellow

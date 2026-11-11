@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPM-420 HMI prototype</title>
+<style>
+:root{--bg:#d9dce1;--panel:#eef0f3;--ink:#1c2430;--mut:#5b6573;--line:#aab1bb;--ok:#1f8a3b;--warn:#c77700;--bad:#c62828;--act:#1565c0;--btn:#f7f8fa}
+*{box-sizing:border-box}body{margin:0;background:#2b2f36;color:var(--ink);font:14px/1.3 Arial,Helvetica,sans-serif;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px}
+.note{color:#cfd4dc;max-width:800px;font-size:12px}
+#hmi{width:820px;height:500px;background:var(--bg);display:grid;grid-template-rows:48px 376px 56px;border:10px solid #111;border-radius:6px;overflow:hidden;flex:none}
+@media(max-width:840px){#hmi{transform-origin:top left;transform:scale(calc((100vw - 20px)/820))}body{align-items:flex-start;overflow-x:hidden}}
+header{display:flex;align-items:center;gap:8px;padding:0 6px;background:#3a4350;color:#fff}
+header .st{min-width:120px;text-align:center;font-weight:bold;padding:6px 8px;border-radius:3px}
+header .grow{flex:1;font-size:12px;line-height:1.2}
+button{font:inherit;font-weight:bold;min-width:64px;min-height:40px;border:1px solid var(--line);border-radius:4px;background:var(--btn);color:var(--ink);cursor:pointer}
+button:active{filter:brightness(.85)}button:disabled{opacity:.45;cursor:not-allowed}
+button.on{background:var(--act);color:#fff;border-color:var(--act)}
+.b-stop{background:var(--bad);color:#fff;border-color:#7f1d1d}.b-reset{background:var(--act);color:#fff}.b-start{background:var(--ok);color:#fff;min-width:110px;min-height:56px;font-size:18px}
+main{padding:8px;overflow:hidden;display:grid;gap:8px;align-content:start}
+.cols{display:grid;gap:8px}.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}.c5{grid-template-columns:repeat(5,1fr)}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px}
+.box h4{margin:0 0 4px;font-size:11px;color:var(--mut);text-transform:uppercase}
+.big{font-size:28px;font-weight:bold;font-variant-numeric:tabular-nums}
+.ok{background:var(--ok);color:#fff}.warn{background:var(--warn);color:#fff}.bad{background:var(--bad);color:#fff}.idle{background:#6b7480;color:#fff}
+.lamp{display:inline-block;width:12px;height:12px;border-radius:50%;background:#8a929c;margin-right:4px;vertical-align:-1px}.lamp.g{background:var(--ok)}.lamp.r{background:var(--bad)}.lamp.a{background:var(--warn)}
+nav{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;padding:4px;background:#3a4350}nav button{min-width:0;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
+.field{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 0}.field input{width:90px;font:inherit;padding:6px;text-align:right;border:1px solid var(--line);border-radius:3px}
+.field input:invalid{border-color:var(--bad);background:#fde8e8}
+.tabs{display:flex;gap:4px}.tabs button{min-height:32px;font-size:12px}
+.alarmbar{background:var(--bad);color:#fff;padding:4px 8px;font-weight:bold;cursor:pointer;border-radius:3px}
+.syn{display:flex;align-items:flex-end;gap:6px;height:200px}.syn div{flex:1;border:2px solid var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:bold;background:#fff}
+small{color:var(--mut)}
+</style></head><body>
+<div class="note"><b>SPM-420 HMI prototype</b> (KTP700 Basic, 800 × 480). Runs on a built-in tag simulator - it is a layout and navigation reference, not machine software. Demo logins: operator/1, setter/2, maint/3, admin/9 (PIN = level). Use the grey buttons below the panel to inject faults.</div>
+<div id="hmi"><header id="hd"></header><main id="mn"></main><nav id="nv"></nav></div>
+<div class="note" id="sim"></div>
+<script>
+const STATES=['STOPPED','STARTING','READY','RUNNING','STOPPING','FAULT','E-STOP'],MODES=['OFF','MANUAL','SETUP','AUTO','MAINT'];
+const STEPS={0:'IDLE',10:'WAIT CONDITIONS',20:'PULL FILM',30:'SETTLE',40:'CLOSE JAWS',50:'SEAL DWELL',60:'OPEN JAWS',70:'CYCLE END',900:'ABORT'};
+const ALARMS={1:['A','Emergency stop active','Release E-stop, press RESET, restart'],2:['A','Guard door open','Close door, press RESET'],3:['A','Compressed air pressure low','Restore air supply, RESET'],4:['B','Film roll finished / film break','Splice new roll, RESET, START'],6:['A','Horizontal jaw did not close in time','Check air, obstruction, sensor B5'],13:['A','Zone 1 thermocouple break','Replace thermocouple B30'],16:['B','Sealing temperature outside tolerance band','Wait for temperature, START'],21:['C','Weigher not ready (waiting for product)','Check product supply'],22:['B','No bag detected at discharge','Clear jaws / chute, RESET'],26:['C','Infeed hopper low level','Refill hopper']};
+const USERS={operator:1,setter:2,maint:3,admin:9};
+const T={state:0,mode:0,step:0,speed:0,bagsTotal:128450,bagsBatch:0,bagsShift:0,empty:0,batchTarget:5000,temp:[25,25,25],out:[0,0,0],heaters:false,key:false,
+ alarms:new Set(),hist:[],first:0,user:null,level:0,screen:'login',tab:'prod',run_s:0,stop_s:0,
+ rcp:{name:'Potato chips 40 g',target:40,len:230,wid:160,reg:false,regWin:15,regOff:0,speed:40,vel:800,acc:6000,seal:450,t:[150,150,140],band:8,knife:200,dump:0,blast:0,n2:false,elev:50,take:60,coder:false},
+ io:{estop:true,guard:true,air:true,film:true,wgh:true,hopperLow:false}};
+const RCPS=['Potato chips 40 g','Extruded puffs 30 g','Crackers 100 g','Mini biscuits 150 g','Coated nuts 200 g'];
+let cyc=0;
+function raise(id){if(!T.alarms.has(id)){T.alarms.add(id);T.hist.unshift({t:new Date(),id,on:true});if(!T.first&&ALARMS[id][0]!=='C')T.first=id}}
+function sim(dt){ // simplified mirror of FB_ModeManager / FB_BagCycle, enough to exercise every screen
+ const io=T.io,inBand=T.temp.every((x,i)=>Math.abs(x-T.rcp.t[i])<=T.rcp.band);
+ if(!io.estop)raise(1);if(!io.guard&&io.estop)raise(2);if(!io.air)raise(3);if(!io.film)raise(4);
+ io.hopperLow?raise(26):T.alarms.delete(26);
+ const cls=c=>[...T.alarms].some(a=>ALARMS[a][0]===c);
+ if(!io.estop)T.state=6;else if(cls('A')&&T.state!==6)T.state=5;
+ if(T.state===0&&[1,2,4].includes(T.mode))T.state=2;if(T.state===2&&[0,3].includes(T.mode))T.state=0;
+ if(T.state===1&&inBand)T.state=3;if(T.state===3&&(cls('B')||(T.batchTarget&&T.bagsBatch>=T.batchTarget)))T.state=4;
+ if(T.state===4&&T.step===0)T.state=0;
+ const heatOn=T.heaters&&io.estop&&T.mode!==0&&!T.alarms.has(13);
+ T.temp=T.temp.map((x,i)=>{const sp=T.rcp.t[i];T.out[i]=heatOn?Math.max(0,Math.min(100,(sp-x)*8+12)):0;return x+(T.out[i]*0.022-(x-25)*0.0021)*dt*4});
+ if(T.state===3||T.state===4){T.run_s+=dt;const per=60/T.rcp.speed;
+  if(!io.wgh&&T.state===3){T.step=10;raise(21);T.speed=0}
+  else{T.alarms.delete(21);cyc+=dt;const f=cyc/per;T.step=f<.28?20:f<.32?30:f<.42?40:f<.72?50:f<.82?60:f<.86?70:10;
+   if(cyc>=per){cyc=0;T.bagsTotal++;T.bagsBatch++;T.bagsShift++;T.speed=T.rcp.speed;if(T.state===4)T.step=0}}
+ }else{T.stop_s+=dt;T.speed=0;T.step=T.state>=5?900:0}
+}
+const cmd={start(){if(T.mode===3&&T.state===0&&T.level>=1)T.state=1},stop(){if(T.state===3)T.state=4;else if(T.state===1)T.state=0},
+ reset(){for(const a of[...T.alarms]){const c={1:!T.io.estop,2:!T.io.guard,3:!T.io.air,4:!T.io.film}[a];if(!c){T.alarms.delete(a);T.hist.unshift({t:new Date(),id:a,on:false})}}
+  const anyA=[...T.alarms].some(a=>ALARMS[a][0]==='A');if(T.state>=5&&!anyA&&T.io.estop){T.state=0;T.first=0}},
+ mode(m){if([0,2,5].includes(T.state)&&T.level>=1&&(m!==4||(T.key&&T.level>=3)))T.mode=m}};
+const el=(h)=>h,f1=x=>x.toFixed(1);
+function field(lbl,path,min,max,unit,lvl,step=1){const v=path.split('.').reduce((o,k)=>o[k],T);return `<div class="field"><span>${lbl} <small>[${min}…${max} ${unit}]</small></span><input type="number" min="${min}" max="${max}" step="${step}" value="${v}" data-path="${path}" ${T.level<lvl?'disabled title="needs higher user level"':''}></div>`}
+function toggle(lbl,path,lvl){const v=path.split('.').reduce((o,k)=>o[k],T);return `<div class="field"><span>${lbl}</span><button data-toggle="${path}" class="${v?'on':''}" ${T.level<lvl?'disabled':''}>${v?'ON':'OFF'}</button></div>`}
+const stCls=()=>T.state===3?'ok':T.state>=5?'bad':T.state===0?'idle':'warn';
+const S={
+ login:()=>`<div class="box" style="max-width:420px;margin:30px auto"><h4>Login</h4>${T.user?`<p>Logged in: <b>${T.user}</b> (level ${T.level})</p><button data-act="logout">Log off</button>`:
+  `<div class="field"><span>User</span><select id="u" style="font:inherit;padding:6px">${Object.keys(USERS).map(u=>`<option>${u}</option>`).join('')}</select></div><div class="field"><span>PIN</span><input id="p" type="password" inputmode="numeric"></div><button data-act="login" style="width:100%">Log in</button><p id="lerr" style="color:var(--bad)"></p>`}
+  <p><small>Language: English | العربية &nbsp;·&nbsp; PLC program 0.1 · HMI 0.1</small></p></div>`,
+ dash:()=>`<div class="cols c5">${MODES.map((m,i)=>`<button data-mode="${i}" class="${T.mode===i?'on':''}" ${i===4&&!T.key?'title="needs key switch S4"':''}>${m}</button>`).join('')}</div>
+  <div class="cols c4"><div class="box ${stCls()}"><h4 style="color:inherit">State</h4><div class="big">${STATES[T.state]}</div></div>
+  <div class="box"><h4>Speed</h4><div class="big">${f1(T.speed)}</div><small>set ${T.rcp.speed} bags/min</small></div>
+  <div class="box"><h4>Batch</h4><div class="big">${T.bagsBatch}</div><small>of ${T.batchTarget||'∞'} · <progress max="${T.batchTarget||1}" value="${T.bagsBatch}" style="width:70px"></progress></small></div>
+  <div class="box" style="display:flex;align-items:center;justify-content:center"><button class="b-start" data-act="start" ${T.mode===3&&T.state===0&&T.level>=1?'':'disabled'}>START</button></div></div>
+  <div class="cols c3">${['Front jaw','Rear jaw','Vertical bar'].map((n,i)=>`<div class="box"><h4>${n}</h4><span class="lamp ${Math.abs(T.temp[i]-T.rcp.t[i])<=T.rcp.band?'g':'a'}"></span><b>${f1(T.temp[i])} °C</b> <small>set ${T.rcp.t[i]}</small></div>`).join('')}</div>
+  <div class="box"><h4>Recipe / message</h4><b>${T.rcp.name}</b> · ${T.rcp.wid} × ${T.rcp.len} mm · ${T.rcp.target} g<br>
+  ${T.first?`First-out alarm ${T.first}: ${ALARMS[T.first][1]}`:T.state===0&&T.mode!==3?'Select AUTO, switch heaters on (Settings › Temperature), then START.':T.state===1?'Heating - production starts automatically when all zones are in band.':T.level<1?'Log in to operate the machine.':'No active fault.'}</div>`,
+ over:()=>{const c=(on)=>on?'style="background:#c8e6c9;border-color:var(--ok)"':'';const r=T.state===3||T.state===4;return `<div class="box"><h4>Machine overview - step ${T.step} ${STEPS[T.step]||''}</h4><div class="syn">
+  <div ${c(r)} style="height:90px">Hopper<br>${T.io.hopperLow?'LOW':'ok'}</div><div ${c(r)} style="height:190px">Z elevator</div><div ${c(r&&T.io.wgh)} style="height:130px;align-self:flex-start">Weigher<br>${T.io.wgh?'ready':'starved'}</div>
+  <div ${c(T.step===20)} style="height:150px">Former +<br>pull belts</div><div ${c(T.step===40||T.step===50)} style="height:60px">Jaws<br>${[40,50].includes(T.step)?'CLOSED':'open'}</div><div ${c(r)} style="height:50px">Take-off</div></div></div>
+  <div class="box"><span class="lamp ${T.io.estop?'g':'r'}"></span>E-stop chain <span class="lamp ${T.io.guard?'g':'r'}"></span>Guards <span class="lamp ${T.io.air?'g':'r'}"></span>Air <span class="lamp ${T.io.film?'g':'r'}"></span>Film <span class="lamp ${T.io.wgh?'g':'a'}"></span>Weigher ready</div>`},
+ prod:()=>settings(`<div class="cols c2"><div class="box"><h4>Production settings</h4>${field('Speed','rcp.speed',5,60,'bags/min',1)}${field('Knife delay','rcp.knife',0,1500,'ms',2)}${field('Air blast','rcp.blast',0,400,'ms',2)}${toggle('Nitrogen flush','rcp.n2',2)}${toggle('Date coder','rcp.coder',2)}</div>
+  <div class="box"><h4>Setup functions (SETUP mode)</h4><button ${T.mode===2&&T.level>=2?'':'disabled'}>Single cycle</button> <button ${T.mode===2&&T.level>=2?'':'disabled'}>Empty bag</button> <button ${T.mode===2&&T.level>=2?'':'disabled'}>Film jog ▶</button><p><small>Available to Setter in SETUP mode with guards closed.</small></p></div></div>`),
+ weight:()=>settings(`<div class="cols c2"><div class="box"><h4>Weight settings</h4>${field('Target weight','rcp.target',10,1000,'g',2,0.5)}${field('Dump advance','rcp.dump',0,800,'ms',2)}<p><small>The target is entered at the weigher panel unless the weigher data link option is fitted. Tolerances and reject limits are set at the weigher / checkweigher.</small></p></div>
+  <div class="box"><h4>Weigher</h4><span class="lamp ${T.io.wgh?'g':'a'}"></span>${T.io.wgh?'Combination ready':'Waiting for product'}<p><small>Bag weights are not measured by the bagger. Fit a checkweigher for per-bag weight records.</small></p></div></div>`),
+ temp:()=>settings(`<div class="cols c2"><div class="box"><h4>Temperature settings</h4>${field('Front jaw','rcp.t.0',60,210,'°C',2)}${field('Rear jaw','rcp.t.1',60,210,'°C',2)}${field('Vertical bar','rcp.t.2',60,210,'°C',2)}${field('Seal time','rcp.seal',150,2000,'ms',2)}${toggle('Heaters','heaters',1)}</div>
+  <div class="box"><h4>Actual</h4><table><tr><th>Zone</th><th>°C</th><th>Output</th><th>Band</th></tr>${[0,1,2].map(i=>`<tr><td>Z${i+1}</td><td>${f1(T.temp[i])}</td><td>${T.out[i].toFixed(0)} %</td><td><span class="lamp ${Math.abs(T.temp[i]-T.rcp.t[i])<=T.rcp.band?'g':'a'}"></span></td></tr>`).join('')}</table><small>Hard limit 220 °C in PLC; independent cut-out 250 °C.</small></div></div>`),
+ motor:()=>{const s=T.rcp.len/1000,a=T.rcp.acc/1000,v=T.rcp.vel/1000,d=v*v/(2*a),tp=2*d>=s?2*Math.sqrt(s/a):2*v/a+(s-2*d)/v,ct=tp+T.rcp.seal/1000+0.35;return settings(`<div class="cols c2"><div class="box"><h4>Motor speed settings</h4>${field('Film pull velocity','rcp.vel',100,1000,'mm/s',2,10)}${field('Film pull acceleration','rcp.acc',500,8000,'mm/s²',2,100)}${field('Elevator speed','rcp.elev',10,100,'%',2)}${field('Take-off speed','rcp.take',10,100,'%',2)}</div>
+  <div class="box"><h4>Calculated</h4>Pull time <b>${tp.toFixed(2)} s</b><br>Mechanical cycle <b>${ct.toFixed(2)} s</b><br>Theoretical limit <b>${(60/ct).toFixed(0)} bags/min</b>${T.rcp.speed>60/ct?'<p style="color:var(--bad)"><b>Speed setpoint exceeds this limit.</b></p>':''}</div></div>`)},
+ product:()=>`<div class="cols c2"><div class="box"><h4>Recipes</h4>${RCPS.map(r=>`<button data-rcp="${r}" class="${T.rcp.name===r?'on':''}" style="width:100%;margin-bottom:4px;min-height:34px" ${T.level<1||T.state===3?'disabled':''}>${r}</button>`).join('')}<small>Recipe change is locked while RUNNING.</small></div>
+  <div class="box"><h4>Product configuration</h4>${field('Bag length','rcp.len',80,300,'mm',2)}${field('Bag width','rcp.wid',80,200,'mm',2)}<small>Forming set: tube OD ${(2*T.rcp.wid/Math.PI).toFixed(1)} mm, film ${2*T.rcp.wid+20} mm</small>${toggle('Registration mark','rcp.reg',2)}${field('Search window ±','rcp.regWin',2,40,'mm',2)}${field('Cut offset','rcp.regOff',-50,50,'mm',2)}</div></div>`,
+ count:()=>{const e=T.run_s+T.stop_s?100*T.run_s/(T.run_s+T.stop_s):0;return `<div class="cols c4"><div class="box"><h4>Total</h4><div class="big">${T.bagsTotal}</div><small>not resettable</small></div><div class="box"><h4>Batch</h4><div class="big">${T.bagsBatch}</div><button data-act="rbatch" ${T.level<2?'disabled':''}>Reset</button></div>
+  <div class="box"><h4>Shift</h4><div class="big">${T.bagsShift}</div><button data-act="rshift" ${T.level<1?'disabled':''}>Reset</button></div><div class="box"><h4>Empty cycles</h4><div class="big">${T.empty}</div></div></div>
+  <div class="cols c2"><div class="box">${field('Batch target (0 = endless)','batchTarget',0,9999999,'bags',1)}</div><div class="box"><h4>Time</h4>Run ${(T.run_s/60).toFixed(1)} min · Stop ${(T.stop_s/60).toFixed(1)} min · Availability <b>${e.toFixed(0)} %</b></div></div>`},
+ alarm:()=>`<div class="box" style="height:360px;overflow:auto"><h4>Alarm history (${T.alarms.size} active)</h4>${T.hist.length?`<table><tr><th>Time</th><th>Id</th><th>Cl.</th><th>Text</th><th>Status</th><th>What to do</th></tr>${T.hist.slice(0,40).map(h=>`<tr style="${h.on&&T.alarms.has(h.id)?'color:var(--bad);font-weight:bold':''}"><td>${h.t.toLocaleTimeString()}</td><td>${h.id}</td><td>${ALARMS[h.id][0]}</td><td>${ALARMS[h.id][1]}</td><td>${h.on?'raised':'cleared'}</td><td>${ALARMS[h.id][2]}</td></tr>`).join('')}</table>`:'<p>No alarm recorded since power-up.</p>'}</div>`,
+ diag:()=>service(`<div class="cols c2"><div class="box"><h4>Inputs</h4>${[['I0.4 E-stop relay OK',T.io.estop],['I0.5 Guard relay OK',T.io.guard],['I0.6 Air pressure OK',T.io.air],['I0.7 Film present',T.io.film],['I1.2 Jaw closed',[40,50].includes(T.step)],['I1.3 Jaw open',![40,50].includes(T.step)],['I8.0 Weigher ready',T.io.wgh],['I8.5 Hopper low',T.io.hopperLow],['I9.4 Maintenance key',T.key]].map(([n,v])=>`<div><span class="lamp ${v?'g':''}"></span>${n}</div>`).join('')}</div>
+  <div class="box"><h4>Outputs</h4>${[['Q0.3 Jaw close',[40,50].includes(T.step)],['Q0.4 Vertical seal',[40,50].includes(T.step)],['Q0.5 Knife',T.step===50],['Q8.0 Heater contactor',T.heaters&&T.io.estop&&T.mode!==0],['Q8.1 Elevator run',T.state===3],['Q8.2 Take-off run',T.state===3],['Q8.4 Lamp green',T.state===3],['Q8.6 Lamp red',T.state>=5]].map(([n,v])=>`<div><span class="lamp ${v?'g':''}"></span>${n}</div>`).join('')}<p><small>Axis: ${T.state>=1&&T.state<=4?'enabled':'disabled'} · PLC cycle 4 ms (placeholder)</small></p></div></div>`),
+ maint:()=>{const en=T.mode===4&&T.state===2&&T.level>=3&&T.io.guard;return service(`<div class="box"><h4>Manual functions ${en?'':'- locked: needs MAINT mode, key switch, Maintenance user, guards closed'}</h4><div class="cols c4">${['Jaw close','Vertical seal','Knife (jaws closed)','Film ▶','Film ◀','Elevator','Take-off','Feeder'].map(n=>`<button ${en?'':'disabled'}>${n}</button>`).join('')}</div><p><small>Buttons act only while pressed. Jaw force up to 1.9 kN: functions are blocked whenever a guard is open.</small></p></div>
+  <div class="box"><h4>Maintenance counters</h4>Jaw cycles ${T.bagsTotal} · Knife cycles ${T.bagsTotal} · Pull-belt distance ${(T.bagsTotal*T.rcp.len/1e6).toFixed(1)} km</div>`)},
+ users:()=>admin(`<div class="box"><h4>Operator management</h4><table><tr><th>User</th><th>Group</th><th>Level</th></tr>${Object.entries(USERS).map(([u,l])=>`<tr><td>${u}</td><td>${{1:'Operator',2:'Setter',3:'Maintenance',9:'Administrator'}[l]}</td><td>${l}</td></tr>`).join('')}</table><p><small>${T.level>=9?'On the panel this is the WinCC user view: add, change password, delete.':'Administrator login required to change users.'}</small></p></div>`),
+ adm:()=>admin(`<div class="cols c2"><div class="box"><h4>Administrator settings</h4>${field('Temperature band ±','rcp.band',3,20,'K',9)}<div class="field"><span>Date / time</span><b>${new Date().toLocaleString()}</b></div><div class="field"><span>PLC / HMI address</span><b>192.168.10.10 / .11</b></div></div>
+  <div class="box"><h4>System</h4><button ${T.level<9?'disabled':''} data-act="clr">Clear alarm buffer</button> <button ${T.level<9?'disabled':''}>Backup to USB</button><p><small>Language, brightness and transfer settings are in the panel start centre.</small></p></div></div>`)};
+const tabs=(list,body)=>`<div class="tabs">${list.map(([k,n])=>`<button data-go="${k}" class="${T.screen===k?'on':''}">${n}</button>`).join('')}</div>${body}`;
+const settings=b=>tabs([['prod','Production'],['weight','Weight'],['temp','Temperature'],['motor','Motor speed']],b);
+const service=b=>tabs([['diag','Diagnostics'],['maint','Maintenance']],b);
+const admin=b=>tabs([['users','Operators'],['adm','Administrator']],b);
+const NAV=[['dash','Dashboard'],['over','Overview'],['product','Product'],['prod','Settings'],['count','Counter'],['alarm','Alarms'],['diag','Service'],['users','Admin']];
+const GROUP={weight:'prod',temp:'prod',motor:'prod',maint:'diag',adm:'users',login:''};
+let lastHtml='';
+function render(){
+ const act=[...T.alarms].filter(a=>ALARMS[a][0]!=='C');
+ document.getElementById('hd').innerHTML=`<div class="st ${stCls()}">${STATES[T.state]}</div><div class="grow"><b>${MODES[T.mode]}</b> · ${T.rcp.name}<br>${act.length?`<span class="alarmbar" data-go="alarm">ALARM ${act[0]}: ${ALARMS[act[0]][1]}</span>`:[...T.alarms].length?`⚠ ${ALARMS[[...T.alarms][0]][1]}`:'&nbsp;'}</div>
+  <button data-go="login" style="min-width:90px">${T.user||'Login'}</button><button class="b-reset" data-act="reset" ${T.level<1?'disabled':''}>RESET</button><button class="b-stop" data-act="stop">STOP</button>`;
+ const html=S[T.screen]();
+ if(html!==lastHtml&&!document.activeElement.matches('#mn input,#mn select')){document.getElementById('mn').innerHTML=html;lastHtml=html}
+ document.getElementById('nv').innerHTML=NAV.map(([k,n])=>`<button data-go="${k}" class="${(GROUP[T.screen]||T.screen)===k?'on':''}">${n}${k==='alarm'&&act.length?' ('+act.length+')':''}</button>`).join('');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go],[data-act],[data-mode],[data-toggle],[data-rcp],[data-sim]');if(!b||b.disabled)return;const d=b.dataset;
+ if(d.go)T.screen=d.go;if(d.mode)cmd.mode(+d.mode);if(d.rcp)T.rcp.name=d.rcp;
+ if(d.toggle){const ks=d.toggle.split('.'),o=ks.slice(0,-1).reduce((o,k)=>o[k],T);o[ks.at(-1)]=!o[ks.at(-1)]}
+ if(d.sim){if(d.sim==='key')T.key=!T.key;else T.io[d.sim]=!T.io[d.sim]}
+ if(d.act==='login'){const u=document.getElementById('u').value,p=document.getElementById('p').value;if(String(USERS[u])===p){T.user=u;T.level=USERS[u];T.screen='dash'}else{document.getElementById('lerr').textContent='Wrong PIN.';return}}
+ if(d.act==='logout'){T.user=null;T.level=0}if(d.act==='rbatch')T.bagsBatch=0;if(d.act==='rshift')T.bagsShift=0;if(d.act==='clr')T.hist=[];
+ if(['start','stop','reset'].includes(d.act))cmd[d.act]();lastHtml='';render();simbar()});
+document.addEventListener('change',e=>{const i=e.target;if(!i.dataset.path)return;const v=Number(i.value);if(Number.isNaN(v)||v<+i.min||v>+i.max){i.value=i.dataset.path.split('.').reduce((o,k)=>o[k],T);return}
+ const ks=i.dataset.path.split('.'),o=ks.slice(0,-1).reduce((o,k)=>o[k],T);o[ks.at(-1)]=v;i.blur();lastHtml='';render()});
+function simbar(){document.getElementById('sim').innerHTML='Simulator: '+[['estop','E-stop chain'],['guard','Guard door'],['air','Air'],['film','Film'],['wgh','Weigher ready'],['hopperLow','Hopper low']].map(([k,n])=>`<button data-sim="${k}" style="min-height:28px;font-weight:normal">${n}: ${T.io[k]?'1':'0'}</button>`).join(' ')+` <button data-sim="key" style="min-height:28px;font-weight:normal">Key S4: ${T.key?'1':'0'}</button>`}
+setInterval(()=>{sim(0.1);render()},100);simbar();render();
+</script></body></html>

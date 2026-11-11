@@ -1,0 +1,58 @@
+hmi_tag,plc_address,type,access,acquisition_ms,used_on_screens,min,max,unit,user_level
+Machine_State,"DB_Machine".State,Int,R,500,all (header),,,,-
+Machine_Mode,"DB_Machine".Mode,Int,R,500,all (header),,,,-
+Mode_Request,"DB_Machine".ModeRequest,Int,RW,500,Dashboard,0,4,,Operator (4 = Maintenance + key)
+Cmd_Start,"DB_Machine".CmdStart,Bool,W,-,Dashboard,,,,Operator
+Cmd_Stop,"DB_Machine".CmdStop,Bool,W,-,all (header),,,,none - always available
+Cmd_Reset,"DB_Machine".CmdReset,Bool,W,-,all (header),,,,Operator
+Cmd_SingleCycle,"DB_Machine".CmdSingleCycle,Bool,W,-,Production settings,,,,Setter
+Cmd_EmptyBag,"DB_Machine".CmdEmptyBag,Bool,RW,-,Production settings,,,,Setter
+Heaters_On,"DB_Machine".HeatersOn,Bool,RW,500,Temperature,,,,Operator
+Cycle_Step,"DB_Machine".CycleStep,Int,R,250,Overview / Diagnostics,,,,-
+Speed_Actual,"DB_Machine".Cnt.ActualSpeed_bpm,Real,R,1000,Dashboard,,,bags/min,-
+Bags_Total,"DB_Machine".Cnt.BagsTotal,DInt,R,1000,Counter,,,,-
+Bags_Batch,"DB_Machine".Cnt.BagsBatch,DInt,RW,1000,Dashboard / Counter,0,0,,Setter (reset only)
+Bags_Shift,"DB_Machine".Cnt.BagsShift,DInt,RW,1000,Counter,0,0,,Operator (reset only)
+Batch_Target,"DB_Machine".Cnt.BatchTarget,DInt,RW,1000,Counter,0,9999999,bags,Operator
+Empty_Cycles,"DB_Machine".Cnt.EmptyCycles,DInt,R,1000,Counter,,,,-
+Temp_Z1_Act,"DB_Machine".Zone[1].Actual,Real,R,1000,Dashboard / Temperature,,,degC,-
+Temp_Z2_Act,"DB_Machine".Zone[2].Actual,Real,R,1000,Dashboard / Temperature,,,degC,-
+Temp_Z3_Act,"DB_Machine".Zone[3].Actual,Real,R,1000,Dashboard / Temperature,,,degC,-
+Temp_Z1_Out,"DB_Machine".Zone[1].Output_pct,Real,R,1000,Temperature,,,%,-
+Temp_Z2_Out,"DB_Machine".Zone[2].Output_pct,Real,R,1000,Temperature,,,%,-
+Temp_Z3_Out,"DB_Machine".Zone[3].Output_pct,Real,R,1000,Temperature,,,%,-
+Rcp_Name,"DB_Recipe".Active.Name,String[24],RW,2000,Product configuration,,,,Setter
+Rcp_TargetWeight,"DB_Recipe".Active.TargetWeight_g,Real,RW,2000,Weight settings,10,1000,g,Setter
+Rcp_BagLength,"DB_Recipe".Active.BagLength_mm,Real,RW,2000,Product configuration,80,300,mm,Setter
+Rcp_BagWidth,"DB_Recipe".Active.BagWidth_mm,Real,RW,2000,Product configuration,80,200,mm,Setter
+Rcp_UseRegMark,"DB_Recipe".Active.UseRegMark,Bool,RW,2000,Product configuration,,,,Setter
+Rcp_RegWindow,"DB_Recipe".Active.RegWindow_mm,Real,RW,2000,Product configuration,2,40,mm,Setter
+Rcp_RegOffset,"DB_Recipe".Active.RegOffset_mm,Real,RW,2000,Product configuration,-50,50,mm,Setter
+Rcp_Speed,"DB_Recipe".Active.SpeedSet_bpm,Real,RW,2000,Production settings,5,60,bags/min,Operator
+Rcp_PullVel,"DB_Recipe".Active.PullVelocity_mm_s,Real,RW,2000,Motor speed,100,1000,mm/s,Setter
+Rcp_PullAcc,"DB_Recipe".Active.PullAccel_mm_s2,Real,RW,2000,Motor speed,500,8000,mm/s2,Setter
+Rcp_SealTime,"DB_Recipe".Active.SealTime_ms,DInt,RW,2000,Temperature,150,2000,ms,Setter
+Rcp_Temp_Z1,"DB_Recipe".Active.TempSet_Z1,Real,RW,2000,Temperature,60,210,degC,Setter
+Rcp_Temp_Z2,"DB_Recipe".Active.TempSet_Z2,Real,RW,2000,Temperature,60,210,degC,Setter
+Rcp_Temp_Z3,"DB_Recipe".Active.TempSet_Z3,Real,RW,2000,Temperature,60,210,degC,Setter
+Rcp_TempBand,"DB_Recipe".Active.TempBand,Real,RW,2000,Temperature,3,20,K,Admin
+Rcp_KnifeDelay,"DB_Recipe".Active.KnifeDelay_ms,DInt,RW,2000,Production settings,0,1500,ms,Setter
+Rcp_DumpAdvance,"DB_Recipe".Active.DumpAdvance_ms,DInt,RW,2000,Weight settings,0,800,ms,Setter
+Rcp_AirBlast,"DB_Recipe".Active.AirBlast_ms,DInt,RW,2000,Production settings,0,400,ms,Setter
+Rcp_N2,"DB_Recipe".Active.N2Flush,Bool,RW,2000,Production settings,,,,Setter
+Rcp_ElevSpeed,"DB_Recipe".Active.ElevatorSpeed_pct,Real,RW,2000,Motor speed,10,100,%,Setter
+Rcp_TakeoffSpeed,"DB_Recipe".Active.TakeoffSpeed_pct,Real,RW,2000,Motor speed,10,100,%,Setter
+Rcp_Index,"DB_Recipe".ActiveIndex,Int,RW,2000,Product configuration,1,20,,Setter
+Alarm_Word1,"DB_Alarms".Word1,Word,R,500,Alarm view (trigger tag),,,,-
+Alarm_Word2,"DB_Alarms".Word2,Word,R,500,Alarm view (trigger tag),,,,-
+Alarm_FirstOut,"DB_Alarms".FirstOut,Int,R,500,Dashboard,,,,-
+Man_Jaw,"DB_Machine".ManJaw,Bool,RW,-,Maintenance,,,,Maintenance (momentary)
+Man_VSeal,"DB_Machine".ManVSeal,Bool,RW,-,Maintenance,,,,Maintenance (momentary)
+Man_Knife,"DB_Machine".ManKnife,Bool,RW,-,Maintenance,,,,Maintenance (momentary)
+Man_FilmFwd,"DB_Machine".ManFilmFwd,Bool,RW,-,Maintenance / Setup,,,,Setter (momentary)
+Man_FilmRev,"DB_Machine".ManFilmRev,Bool,RW,-,Maintenance,,,,Maintenance (momentary)
+Man_Elevator,"DB_Machine".ManElevator,Bool,RW,-,Maintenance,,,,Maintenance (momentary)
+Man_Takeoff,"DB_Machine".ManTakeoff,Bool,RW,-,Maintenance,,,,Maintenance (momentary)
+Man_Feeder,"DB_Machine".ManFeeder,Bool,RW,-,Maintenance,,,,Maintenance (momentary)
+DI_Byte0..3,%IB0 %IB1 %IB8 %IB9,Byte,R,250,Diagnostics,,,,-
+DQ_Byte0..3,%QB0 %QB1 %QB8 %QB9,Byte,R,250,Diagnostics,,,,-
