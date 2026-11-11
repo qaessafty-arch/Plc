@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SPM-420 Project Overview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Print layout: A4 engineering report. Petrol accent for structure, amber only for warnings. */
+:root{
+  --ink:#172126; --muted:#56656d; --line:#cfd8dc; --soft:#f2f5f6;
+  --accent:#0f6372; --accent-soft:#e3eff1; --warn:#9a4a0b; --warn-soft:#fbeee3; --ok:#1d7a45;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",Arial,Helvetica,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+}
+@page{size:A4;margin:18mm 16mm 20mm 16mm}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;color:var(--ink);font:9.6pt/1.5 var(--f-body);background:#fff}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
+h2{font-size:17pt;line-height:1.15;margin:0 0 3mm;padding-top:1mm}
+h3{font-size:11.5pt;margin:5mm 0 2mm}
+p{margin:0 0 2.6mm}
+ul,ol{margin:0 0 3mm;padding-left:5mm}
+li{margin:0 0 1.2mm}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font:500 7.6pt/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:2mm}
+.sec{break-before:page}
+.keep{break-inside:avoid}
+.lead{font-size:10.6pt;color:var(--ink);max-width:165mm}
+.muted{color:var(--muted)}
+figure{margin:3mm 0 4mm;break-inside:avoid}
+figure img{width:100%;display:block;border:1px solid var(--line)}
+figcaption{font-size:8pt;color:var(--muted);margin-top:1.5mm}
+table{width:100%;border-collapse:collapse;margin:1mm 0 4mm;font-size:8.6pt;break-inside:auto}
+tr{break-inside:avoid}
+th{font:500 7.2pt/1.25 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left;padding:2mm 2.2mm;border-bottom:1.2px solid var(--ink);vertical-align:bottom}
+td{padding:1.4mm 2.2mm;border-bottom:1px solid var(--line);vertical-align:top}
+td.n{font-family:var(--f-mono);white-space:nowrap;text-align:right}
+thead{display:table-header-group}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:3mm 4mm;margin:2mm 0 4mm;break-inside:avoid}
+.callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+.callout b.t{display:block;font-family:var(--f-display);font-size:10.5pt;margin-bottom:1mm}
+.tag{display:inline-block;font:500 7pt/1 var(--f-mono);padding:1.2mm 1.6mm;border-radius:1mm;letter-spacing:.03em;white-space:nowrap}
+.t-done{background:#dff0e6;color:var(--ok)}
+.t-sim{background:var(--accent-soft);color:var(--accent)}
+.t-pre{background:#eceff1;color:var(--muted)}
+.t-no{background:var(--warn-soft);color:var(--warn)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+
+/* cover */
+.cover{height:257mm;display:grid;grid-template-rows:auto 1fr auto;gap:6mm}
+.cover .top{border-top:3px solid var(--accent);padding-top:5mm}
+.cover h1{font-size:30pt;line-height:1.05;margin:2mm 0 3mm}
+.cover .sub{font-size:12pt;color:var(--muted);max-width:150mm}
+.cover figure{align-self:center;margin:0}
+.cover figure img{border:0}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.meta div{padding:3mm 3mm 3mm 0}
+.meta dt{font:500 7pt/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5mm}
+.meta dd{margin:0;font-weight:500}
+.status{margin-top:4mm}
+
+/* key figures */
+.kf{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);margin:2mm 0 5mm}
+.kf div{padding:2.2mm 3mm;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.kf div:nth-child(3n){border-right:0}
+.kf div:nth-last-child(-n+3){border-bottom:0}
+.kf b{display:block;font:600 14pt/1.15 var(--f-display)}
+.kf span{font-size:8pt;color:var(--muted)}
+
+/* flow */
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border:1px solid var(--line);margin:2mm 0 4mm}
+.flow div{padding:2.6mm;border-right:1px solid var(--line);font-size:8pt;line-height:1.35}
+.flow div:last-child{border-right:0}
+.flow b{display:block;font:600 9pt/1.2 var(--f-display);margin-bottom:1mm}
+.flow em{display:block;font-style:normal;font:500 7pt/1.3 var(--f-mono);color:var(--accent);margin-top:1.5mm}
+.flow .bag{background:var(--accent-soft)}
+
+.toc{columns:3;column-gap:8mm;font-size:8.6pt;margin:1mm 0 0;padding-left:4.5mm}
+.toc li{margin:0 0 .6mm}
+.toc li{break-inside:avoid}
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <div class="top">
+    <div class="eyebrow">Project overview and scope of supply</div>
+    <h1>SPM-420 Automatic Snack Filling and Packaging Line</h1>
+    <p class="sub">Multihead weigher with a vertical form-fill-seal bagger for potato chips, crispy snacks, crackers and small biscuits</p>
+  </div>
+  <figure><img src="../../../CAD/ASSEMBLY/SPM-420_isometric.png" alt="Isometric views of the SPM-420 line"></figure>
+  <div>
+    <dl class="meta">
+      <div><dt>Document</dt><dd>Project overview</dd></div>
+      <div><dt>Revision</dt><dd>P1, preliminary</dd></div>
+      <div><dt>Date</dt><dd>11 November 2026</dd></div>
+      <div><dt>Units</dt><dd>mm, kg, s, USD / IQD</dd></div>
+    </dl>
+    <div class="callout warn status"><b class="t">Status: design stage</b>This package is a preliminary design, checked by engineering calculation and computer simulation. No part of it has been built, run on a real controller or measured. All performance figures are calculated or simulated and are marked as such. Drawings are not released for manufacture.</div>
+  </div>
+</section>
+
+<!-- ============================ CONTENTS + SUMMARY ============================ -->
+<section class="sec">
+  <div class="eyebrow">Contents</div>
+  <ol class="toc">
+    <li>Summary</li>
+    <li>How the machine works</li>
+    <li>Layout and dimensions</li>
+    <li>What the design package contains</li>
+    <li>What has been verified, and how</li>
+    <li>What the project must supply</li>
+    <li>Items that can still be added to the package</li>
+    <li>Estimated budget</li>
+    <li>Open issues and assumptions</li>
+    <li>Recommended next steps</li>
+  </ol>
+
+  <h2 style="margin-top:6mm">1. Summary</h2>
+  <p class="lead">The SPM-420 is a complete snack packaging line. Product is lifted to a 10-head combination weigher, which drops exact charges into a vertical bagger that forms pillow bags from roll film, fills, seals and cuts them. The bagger is designed in full; the weigher and the elevator are specified as purchased units with defined interfaces.</p>
+  <p>The reference for the design was a short manufacturer video of a chips and biscuits filling machine. The video frames could not be viewed while the design was prepared, so the reference analysis is based on the video's title, the publisher's catalogue and published data for this machine class. The design follows the most common configuration for snacks, a multihead weigher feeding a vertical form-fill-seal bagger. Please confirm this against the video before detail design begins.</p>
+
+  <div class="kf">
+    <div><b>4450 × 1900 × 3900</b><span>overall line, mm (L × W × H)</span></div>
+    <div><b>6050 × 4100 mm</b><span>floor area with access zones (24.8 m²); 4400 mm clear height</span></div>
+    <div><b>40 bags/min</b><span>rated, 40 g chips in a 160 × 230 mm bag; 49 calculated maximum</span></div>
+    <div><b>80–200 × 80–300 mm</b><span>bag width × length; film web up to 420 mm</span></div>
+    <div><b>4.7 kW, 0.19 m³/min</b><span>connected load at 400/230 V; compressed air at 0.6 MPa</span></div>
+    <div><b>≈ 56,000 USD</b><span>semi-industrial estimate, ±30 %; ≈ 73.8 million IQD</span></div>
+  </div>
+
+  <h3>Maturity at a glance</h3>
+  <table>
+    <thead><tr><th style="width:34%">Area</th><th style="width:22%">State</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Concept, layout, footprint</td><td><span class="tag t-done">Complete</span></td><td>Derived from selected components; final heights wait for weigher and elevator supplier drawings.</td></tr>
+      <tr><td>Calculations</td><td><span class="tag t-done">Complete</span></td><td>Cycle, drive, pneumatics, heating, electrical load, consumption. Based on stated assumptions.</td></tr>
+      <tr><td>3D model and drawings</td><td><span class="tag t-pre">Layout level</span></td><td>Correct envelopes and interfaces; detailed part drawings with tolerances still to be made.</td></tr>
+      <tr><td>Electrical design</td><td><span class="tag t-pre">Design level</span></td><td>Architecture, protection, safety circuits, I/O, cables; production schematics still to be drawn.</td></tr>
+      <tr><td>PLC program and HMI</td><td><span class="tag t-sim">Simulated</span></td><td>Logic tested in simulation; not yet compiled in Siemens TIA Portal.</td></tr>
+      <tr><td>Monitoring software</td><td><span class="tag t-done">Runs</span></td><td>Tested with simulated machine data; connection to a real PLC not yet tested.</td></tr>
+      <tr><td>Performance figures</td><td><span class="tag t-sim">Calculated / simulated</span></td><td>No figure has been measured. Validation needs the built machine.</td></tr>
+      <tr><td>Safety</td><td><span class="tag t-no">Draft</span></td><td>Concept and preliminary risk assessment; must be completed and validated on the built machine.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================ HOW IT WORKS ============================ -->
+<section class="sec">
+  <h2>2. How the machine works</h2>
+  <div class="flow">
+    <div><b>Hopper and tray</b>Meters product onto the elevator.<em>Runs on weigher demand</em></div>
+    <div><b>Z-bucket elevator</b>Lifts product about 3.5 m.<em>PLC, on weigher demand</em></div>
+    <div><b>Multihead weigher</b>Picks the heads whose sum is closest to target and drops them.<em>Weigher's own controller</em></div>
+    <div class="bag"><b>Forming and pull</b>Film is wrapped into a tube and pulled down one bag length.<em>PLC + servo</em></div>
+    <div class="bag"><b>Seal and cut</b>Jaws seal the bag top and the next bag's bottom; a knife cuts between.<em>PLC + valves</em></div>
+    <div><b>Take-off conveyor</b>Carries the finished bag past a counting photo-eye.<em>PLC</em></div>
+  </div>
+  <p>The bagger works in a fixed cycle. For the reference recipe (40 g chips, 230 mm bag, 40 bags/min) one cycle takes 1.5 s. The times below come from the simulation of the PLC program and are design values, not measurements.</p>
+  <table class="keep">
+    <thead><tr><th style="width:9%">Step</th><th style="width:20%">Phase</th><th style="width:16%">Time, s</th><th>What happens</th><th style="width:20%">Controlled by</th></tr></thead>
+    <tbody>
+      <tr><td class="num">10</td><td>Dump request</td><td class="num">−0.056</td><td>Shortly before the film pull, the PLC tells the weigher to drop the next charge. The charge needs about 0.70 s to fall to the jaws.</td><td>PLC, weigher</td></tr>
+      <tr><td class="num">20</td><td>Pull film</td><td class="num">0.000–0.422</td><td>Pull belts draw 230 mm of film down over the forming tube.</td><td>Servo drive</td></tr>
+      <tr><td class="num">30</td><td>Settle</td><td class="num">0.422–0.474</td><td>Short pause so the film is still.</td><td>PLC timer</td></tr>
+      <tr><td class="num">40</td><td>Close jaws</td><td class="num">0.474–0.596</td><td>Horizontal jaws and the vertical seal bar close.</td><td>PLC, valves</td></tr>
+      <tr><td class="num">50</td><td>Seal and cut</td><td class="num">0.596–1.048</td><td>Two seals are made at once; the knife cuts between them at 0.798 s. The new charge lands on the closed jaws from 0.646 to 0.996 s.</td><td>PLC timer</td></tr>
+      <tr><td class="num">60</td><td>Open jaws</td><td class="num">1.048–1.170</td><td>Jaws, seal bar and knife retract; the finished bag is on the conveyor.</td><td>Spring-return valves</td></tr>
+      <tr><td class="num">10</td><td>Wait</td><td class="num">1.172–1.504</td><td>The PLC holds until the next cycle is due and the weigher is ready.</td><td>PLC pacing</td></tr>
+    </tbody>
+  </table>
+  <figure style="width:74%;margin-left:auto;margin-right:auto"><img src="../../../AUTOMATION/SEQUENCES/timing_diagram_simulated.png" alt="Simulated timing of the bagger cycle"><figcaption>Simulated timing of three consecutive cycles: PLC step, jaw, seal bar, knife, film speed, dump request and product above the jaws.</figcaption></figure>
+  <div class="callout"><b class="t">Safety is independent of the software</b>Emergency stop, guard-door interlocks, the servo's safe torque off and the heater over-temperature cut-out act directly on the valves, drive and contactors. The PLC only reports their state and cannot override them. There is no bypass function.</div>
+</section>
+
+<!-- ============================ LAYOUT ============================ -->
+<section class="sec">
+  <h2>3. Layout and dimensions</h2>
+  <figure><img src="../../../CAD/DRAWINGS/GA-001_general_arrangement.png" alt="General arrangement drawing"><figcaption>GA-001 General arrangement: top, front and side views with overall dimensions and key heights.</figcaption></figure>
+  <figure><img src="../../../CAD/DRAWINGS/GA-002_floor_layout.png" alt="Floor layout drawing"><figcaption>GA-002 Floor layout: required area, access zones and emergency-stop positions (red).</figcaption></figure>
+</section>
+<section>
+  <table class="keep">
+    <thead><tr><th style="width:36%">Dimension</th><th style="width:20%">Value, mm</th><th>Set by</th></tr></thead>
+    <tbody>
+      <tr><td>Line length</td><td class="num">4450</td><td>Elevator infeed hopper to end of the take-off conveyor</td></tr>
+      <tr><td>Line width</td><td class="num">1900</td><td>Weigher platform; the bagger and film roll fit inside</td></tr>
+      <tr><td>Line height</td><td class="num">3900</td><td>Elevator head above the weigher</td></tr>
+      <tr><td>Bagger frame</td><td class="num">1000 × 1300 × 1500</td><td>Film width, film path, jaw stroke, bag drop height</td></tr>
+      <tr><td>Floor area with clearances</td><td class="num">6050 × 4100</td><td>1200 operator front, 1000 film change rear, 800 at each end</td></tr>
+      <tr><td>Clear ceiling height</td><td class="num">4400</td><td>Room to lift weigher hoppers and elevator parts</td></tr>
+      <tr><td>Weigher platform deck</td><td class="num">+2000</td><td>Follows the weigher chute; supplier dependent</td></tr>
+      <tr><td>Jaw plane</td><td class="num">+700</td><td>Conveyor height plus the longest bag</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">All dimensions are preliminary. They become manufacturing dimensions only after the weigher and elevator suppliers' certified drawings are received and the first assembly is checked against the layout.</p>
+</section>
+
+<!-- ============================ DELIVERED ============================ -->
+<section class="sec">
+  <h2>4. What the design package contains</h2>
+  <p>Everything below exists as files in the project repository and can be handed over. Editable source formats are included so that every item can be changed and regenerated.</p>
+  <table>
+    <thead><tr><th style="width:26%">Deliverable</th><th style="width:40%">Contents</th><th style="width:20%">Formats</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td>Reference analysis</td><td>Machine principle, the ten requested identifications, published comparison data, checklist for confirming the video</td><td>Document</td><td><span class="tag t-pre">Inferred</span></td></tr>
+      <tr><td>Engineering specification</td><td>Functional, performance, utility and design requirements with IDs</td><td>Document</td><td><span class="tag t-done">Complete</span></td></tr>
+      <tr><td>Engineering calculations</td><td>Bag geometry, cycle, servo sizing, sealing forces, air, heating, electrical load and cables, consumption, footprint, structure</td><td>Document + calculation script</td><td><span class="tag t-done">Complete</span></td></tr>
+      <tr><td>Mechanical design</td><td>Choice of dosing method, every bagger sub-assembly with sizes, materials and mounting, fragile-product measures</td><td>Document</td><td><span class="tag t-pre">Layout level</span></td></tr>
+      <tr><td>3D model</td><td>Complete assembly with 22 named parts, exploded view, one file per part</td><td>STEP, STL, PNG, PDF, parametric source</td><td><span class="tag t-pre">Layout level</span></td></tr>
+      <tr><td>Drawings</td><td>General arrangement, floor layout, 22 component sheets</td><td>PDF, DXF, PNG</td><td><span class="tag t-pre">Layout level</span></td></tr>
+      <tr><td>Electrical design</td><td>Architecture, power distribution, safety circuits, motor, heater and sensor wiring, cable schedule, terminal plan, panel layout</td><td>Documents, CSV</td><td><span class="tag t-pre">Design level</span></td></tr>
+      <tr><td>Bill of materials</td><td>77 lines with specification, supplier class, model number where verified, price estimate, three configurations</td><td>CSV + budget script</td><td><span class="tag t-pre">Estimates</span></td></tr>
+      <tr><td>PLC program</td><td>Siemens S7-1200 Structured Text: bag cycle, film pull, temperature control, modes, alarms; 65 I/O points, 32 alarms</td><td>TIA Portal import sources, CSV</td><td><span class="tag t-sim">Simulated</span></td></tr>
+      <tr><td>HMI</td><td>Specification of 14 screens, 57 tags with limits and user levels, clickable browser prototype</td><td>Document, CSV, HTML</td><td><span class="tag t-sim">Prototype</span></td></tr>
+      <tr><td>Monitoring software</td><td>Production statistics, batch records, alarm history, maintenance tracking; read-only towards the PLC</td><td>Python, React, PostgreSQL, Docker</td><td><span class="tag t-done">Runs</span></td></tr>
+      <tr><td>Weigher algorithm</td><td>Combination-weighing routine for a self-built prototype weigher</td><td>C source + tests</td><td><span class="tag t-done">Tested on PC</span></td></tr>
+      <tr><td>Simulation</td><td>PLC logic against a machine model, 12 scenarios including faults; weigher statistics</td><td>Python, results</td><td><span class="tag t-done">Complete</span></td></tr>
+      <tr><td>Manufacturing and assembly guide</td><td>Fabrication, tolerances, tools, assembly sequence, film threading, format change, wear parts</td><td>Documents</td><td><span class="tag t-done">Complete</span></td></tr>
+      <tr><td>Safety documentation</td><td>Standards list, preliminary risk assessment, lockout and cleaning procedures</td><td>Documents</td><td><span class="tag t-no">Draft</span></td></tr>
+      <tr><td>Testing and calibration</td><td>Test plan with acceptance criteria, commissioning checklist, calibration procedures</td><td>Documents</td><td><span class="tag t-done">Complete</span></td></tr>
+      <tr><td>Budget</td><td>Three configurations in USD and IQD</td><td>Document</td><td><span class="tag t-pre">Estimates</span></td></tr>
+      <tr><td>Engineering report</td><td>Findings, assumptions register, limitations, next steps</td><td>Document</td><td><span class="tag t-done">Complete</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================ VERIFIED ============================ -->
+<section class="sec">
+  <h2>5. What has been verified, and how</h2>
+  <table>
+    <thead><tr><th style="width:30%">Check</th><th style="width:40%">Result</th><th>What it does not prove</th></tr></thead>
+    <tbody>
+      <tr><td>PLC logic against a machine model: normal running, warm-up, empty hopper, film out, wrong weight, jams, servo fault, over-temperature, sensor failure, power loss, emergency stop, air loss, door opening</td><td>12 scenarios, 51 checks, all pass</td><td>That the Siemens source compiles, or that real actuators and product behave like the model</td></tr>
+      <tr><td>Combination weighing at 40 g (20,000 simulated dumps)</td><td>Mean 40.5 g, standard deviation 0.7 g, 1.4 % give-away, no bag below the legal tolerance</td><td>Real weigher performance: depends on the product and the supplier's unit</td></tr>
+      <tr><td>Weigher algorithm against brute force (20,000 random cases)</td><td>Identical results</td><td>Behaviour on a microcontroller</td></tr>
+      <tr><td>Monitoring software: 8 automated tests plus a live browser run</td><td>Pass</td><td>Connection to a real PLC</td></tr>
+      <tr><td>HMI prototype: login, all screens, start, emergency stop, reset</td><td>Pass in a browser</td><td>The real Siemens HMI project</td></tr>
+      <tr><td>3D model against the calculated footprint</td><td>Bounding box equals 4450 × 1900 × 3900 mm</td><td>Detailed interferences and manufacturability</td></tr>
+    </tbody>
+  </table>
+  <h3>Defects found and fixed before any hardware existed</h3>
+  <ol>
+    <li>The machine could hang in the stopping state after an aborted cycle.</li>
+    <li>Alarms needed two presses of RESET to clear.</li>
+    <li>The recipe speed was not enforced.</li>
+    <li>The weigher was told to drop too late. The charge landed after the jaws had reopened, on a hot seal held only by the film. The drop is now requested shortly before the film pull, and in the simulation the whole charge lands on the closed jaws with about 50 ms margin on each side.</li>
+    <li>The PLC reported 51.3 bags/min while the machine ran at 40.</li>
+  </ol>
+  <p class="muted">Finding these is the purpose of the simulation. It does not show that no other defects remain.</p>
+</section>
+
+<!-- ============================ MUST SUPPLY ============================ -->
+<section class="sec">
+  <h2>6. What the project must supply</h2>
+  <p>A design package cannot replace physical equipment, licensed software, qualified people or measurements. These items have to come from the project.</p>
+
+  <h3>Equipment to buy complete</h3>
+  <table>
+    <thead><tr><th style="width:30%">Item</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td>10-head multihead weigher</td><td>A precision instrument with load cells, its own controller and legal-metrology approval. Economy class about 9,000 USD; branded and approvable units cost much more.</td></tr>
+      <tr><td>Z-bucket elevator with infeed hopper</td><td>Standard product; buying is cheaper than building. About 2,800–4,500 USD.</td></tr>
+      <tr><td>Forming collar and tube, one set per bag width</td><td>Specialist part; its shape decides whether the film runs straight.</td></tr>
+      <tr><td>Air compressor with dryer and filters</td><td>Only if the factory has no clean, dry compressed air.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Components to buy</h3>
+  <p>Siemens PLC with I/O modules, 7" touch panel, servo drive and motor, two frequency inverters and motors, safety relays, emergency-stop buttons, coded door switches, sensors, pneumatic cylinders and valves, cartridge heaters, thermocouples, stainless enclosure, cables and terminals. All are in the bill of materials. Three order numbers there are marked for confirmation by the distributor.</p>
+
+  <h3>Fabrication</h3>
+  <ul>
+    <li>Stainless-steel frame and weigher platform: TIG welding workshop.</li>
+    <li>Sealing jaws: machined from tool steel, hardened, ground and nickel-plated.</li>
+    <li>Pull-belt units, rollers, film unwind, sheet-metal parts: lathe, mill, laser cutting and bending.</li>
+  </ul>
+
+  <h3>Software licences and tools</h3>
+  <ul>
+    <li>Siemens TIA Portal (STEP 7 Basic with WinCC Basic) and a PC to run it: needed to compile the PLC program and build the HMI.</li>
+    <li>OPC UA runtime licence for the PLC, only if the monitoring PC is used.</li>
+    <li>SISTEMA (free) for the safety performance-level calculation.</li>
+  </ul>
+
+  <h3>Qualified people</h3>
+  <table>
+    <thead><tr><th style="width:30%">Role</th><th>Task</th></tr></thead>
+    <tbody>
+      <tr><td>Mechanical designer</td><td>Review the part drawings and sign them for manufacture.</td></tr>
+      <tr><td>Welder and machinist</td><td>Fabrication to the drawings and tolerances.</td></tr>
+      <tr><td>Electrician / panel builder</td><td>Build and test the cabinet and field wiring to IEC 60204-1.</td></tr>
+      <tr><td>PLC engineer</td><td>Compile, download and commission the program on the machine.</td></tr>
+      <tr><td>Weigher supplier technician</td><td>Install, calibrate and tune the weigher for each product.</td></tr>
+      <tr><td>Safety assessor</td><td>Complete the risk assessment and validate the safety functions on the built machine.</td></tr>
+      <tr><td>Conformity body</td><td>Local approval (COSQC in Iraq), or CE assessment if the machine is exported.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Measurements that replace assumptions</h3>
+  <table>
+    <thead><tr><th style="width:42%">Measure</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>Bulk density of each product (1 L cylinder, five repeats)</td><td>Bag size</td></tr>
+      <tr><td>Film data sheet and seal trials on a test jaw</td><td>Seal temperature and time; whether the jaw cylinder is strong enough</td></tr>
+      <tr><td>High-speed video of the product falling (a 240 fps phone is enough)</td><td>Setting the weigher drop time</td></tr>
+      <tr><td>Film pull force (spring scale)</td><td>Confirms the servo selection</td></tr>
+      <tr><td>Supply voltage, earthing system, summer hall temperature</td><td>Electrical protection and cabinet cooling</td></tr>
+      <tr><td>Supplier quotations and certified drawings</td><td>Replace price estimates and preliminary dimensions</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Site and consumables</h3>
+  <p>Floor space of about 6 × 4 m with 4.4 m clear height; 400 V three-phase 16 A supply; compressed air at 0.6 MPa; film rolls and product for trials; certified test weights; spare knives, PTFE tape, belts and heaters.</p>
+</section>
+
+<!-- ============================ CAN STILL BE ADDED ============================ -->
+<section class="sec">
+  <h2>7. Items that can still be added to the package</h2>
+  <p>Several items listed above as needing a specialist tool can still be prepared, at least in part, as documents. Each would shorten the work of the people in section 6 but still needs their review.</p>
+  <table>
+    <thead><tr><th style="width:24%">Item</th><th style="width:42%">What can be produced</th><th>What still needs a person or tool</th></tr></thead>
+    <tbody>
+      <tr><td>Part drawings for manufacture</td><td>Detailed drawings with dimensions, tolerances, materials and surface finish for the machined and sheet-metal parts (jaws, carriages, rollers, shafts, funnel, chutes), generated from the parametric model</td><td>Review and signature by a mechanical designer; confirmation against the purchased forming set</td></tr>
+      <tr><td>Electrical schematic sheets</td><td>Numbered schematic pages for power, safety, PLC I/O and motors as PDF and DXF, drawn from the existing design</td><td>Check against the actual devices' manuals by an electrician; redraw in an ECAD tool if the panel builder requires one</td></tr>
+      <tr><td>TIA Portal import files</td><td>PLC tag table, HMI tag list and alarm texts as Excel files for TIA Portal's import function</td><td>The import itself and the HMI screen building in TIA Portal; format checked against the TIA version used</td></tr>
+      <tr><td>Independent syntax check of the PLC logic</td><td>A port of the program to standard IEC 61131-3 Structured Text, compiled with an open-source compiler if one can be installed</td><td>Final compilation in TIA Portal, which only a Siemens licence can do</td></tr>
+      <tr><td>Safety calculation input</td><td>Prepared SISTEMA input: safety functions, structure, component list with the reliability values from manufacturer data sheets</td><td>Running SISTEMA and validation on the machine by a competent person</td></tr>
+      <tr><td>Requests for quotation</td><td>Ready-to-send technical requests for the weigher, elevator, forming sets, fabrication and panel build, with the interface data each supplier needs</td><td>Sending them and negotiating</td></tr>
+      <tr><td>Video and photo analysis</td><td>Frame-by-frame analysis of videos you send: the reference clip, product fall timing, seal trials</td><td>Recording the videos</td></tr>
+      <tr><td>Operator documentation in Arabic</td><td>Operator instructions, HMI texts and safety labels in Arabic</td><td>Review by a native-speaking operator</td></tr>
+      <tr><td>Updated design from real data</td><td>Recalculation of drawings, code and budget once measurements and quotations arrive</td><td>Providing the data</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn"><b class="t">What no document can replace</b>Physical parts and equipment, licensed Siemens software, legal approvals and certificates, the safety validation of the built machine, and measured performance figures.</div>
+</section>
+
+<!-- ============================ BUDGET ============================ -->
+<section class="sec">
+  <h2>8. Estimated budget</h2>
+  <p>Prices are estimates made without supplier quotations, except two items whose range comes from public supplier listings. Exchange rate 1 USD = 1320 IQD (Central Bank of Iraq cash selling rate, November 2026). Freight, customs and local margins are covered only by the contingency line.</p>
+  <table class="keep">
+    <thead><tr><th style="width:34%">Configuration</th><th style="text-align:right">USD</th><th style="text-align:right">IQD</th><th style="text-align:right">Accuracy</th></tr></thead>
+    <tbody>
+      <tr><td>1. Educational prototype</td><td class="n">13,993</td><td class="n">18,471,024</td><td class="n">±40 %</td></tr>
+      <tr><td><b>2. Semi-industrial machine</b></td><td class="n"><b>55,919</b></td><td class="n"><b>73,812,816</b></td><td class="n">±30 %</td></tr>
+      <tr><td>3. Industrial machine</td><td class="n">135,083</td><td class="n">178,309,296</td><td class="n">±35 %</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th style="width:18%"></th><th>1. Educational prototype</th><th>2. Semi-industrial</th><th>3. Industrial</th></tr></thead>
+    <tbody>
+      <tr><td>Purpose</td><td>Teach and prove the sequence</td><td>Small factory production</td><td>Continuous production with quality records</td></tr>
+      <tr><td>Frame</td><td>Aluminium profile, bench size</td><td>Welded stainless steel</td><td>Welded stainless, hygienic detailing</td></tr>
+      <tr><td>Weighing</td><td>Single self-built weigh head</td><td>Economy 10-head weigher</td><td>Branded 10/14-head, approvable for trade</td></tr>
+      <tr><td>Control</td><td>S7-1200 and 4" panel</td><td>S7-1200, 7" panel, safety relays</td><td>Fail-safe S7-1200, 7" panel, monitoring PC</td></tr>
+      <tr><td>Quality devices</td><td>None</td><td>None (manual sampling)</td><td>Checkweigher, metal detector, date coder, nitrogen flush</td></tr>
+      <tr><td>Speed (calculated)</td><td>8–15 bags/min</td><td>30–45 bags/min</td><td>40–60 bags/min</td></tr>
+      <tr><td>Selling food</td><td>No</td><td>After safety validation and hygiene review</td><td>Yes, after conformity assessment</td></tr>
+    </tbody>
+  </table>
+  <p><b>Running cost (calculated, semi-industrial at 40 bags/min):</b> energy and film ≈ 25.8 USD per hour, about 12.7 USD per 1000 bags. Film is about 98 % of this figure, so bag length matters far more than energy use. Labour, maintenance and depreciation are not included.</p>
+</section>
+
+<!-- ============================ OPEN ISSUES ============================ -->
+<section class="sec">
+  <h2>9. Open issues and assumptions</h2>
+  <table>
+    <thead><tr><th style="width:30%">Issue</th><th style="width:40%">Detail</th><th>How it is closed</th></tr></thead>
+    <tbody>
+      <tr><td>Jaw sealing force</td><td>The selected cylinder gives 1683 N against an assumed need of 2304 N. Three remedies are prepared: narrower seal lands, a larger cylinder, or a toggle linkage. The frame is sized for the largest option.</td><td>Seal trials on the real film</td></tr>
+      <tr><td>Weigher drop timing</td><td>The drop is set 55 ms before the film pull. In the model this works between about 10 and 100 ms.</td><td>High-speed video per product</td></tr>
+      <tr><td>Weight errors</td><td>The bagger cannot detect a wrong bag weight; this depends on the weigher and, for products sold by weight, on a checkweigher.</td><td>Decision on the quality configuration</td></tr>
+      <tr><td>PLC program</td><td>Not yet compiled in TIA Portal; first import may show syntax errors.</td><td>Compile and bench test</td></tr>
+      <tr><td>Speed limit</td><td>Pneumatic jaws limit the reference bag to about 49 bags/min. Faster speeds need servo-driven jaws, a different mechanism.</td><td>Decision if a higher speed is required</td></tr>
+      <tr><td>Cabinet temperature</td><td>About 45 °C inside at 35 °C hall temperature. A filter fan or cooler is specified for hot halls.</td><td>Site survey</td></tr>
+      <tr><td>Reference machine</td><td>The configuration is inferred, not observed from the video.</td><td>Confirm against the clip</td></tr>
+      <tr><td>Product and site data</td><td>Bulk densities, film properties, fall times, supply and earthing are assumed.</td><td>Measurements in section 6</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================ NEXT STEPS ============================ -->
+<section>
+  <h2 style="margin-top:6mm">10. Recommended next steps</h2>
+  <ol>
+    <li><b>Confirm the scope:</b> products, bag sizes, speed, quality devices and configuration (section 8).</li>
+    <li><b>Request quotations</b> for the weigher and elevator, including certified drawings.</li>
+    <li><b>Build a jaw test rig and run seal trials</b> on the chosen film. This settles the jaw-force question cheaply, before the frame is built.</li>
+    <li><b>Detail design:</b> part drawings and electrical schematics; structural check of the weigher platform.</li>
+    <li><b>Bench test</b> the PLC, servo and touch panel together before installation.</li>
+    <li><b>Build and commission</b> following the commissioning checklist.</li>
+    <li><b>Validate safety</b>, then run the performance tests and replace every calculated figure with a measured one.</li>
+  </ol>
+  <div class="callout"><b class="t">Decisions needed from the client</b>Product list and bag sizes · target speed · semi-industrial or industrial configuration · whether a checkweigher and metal detector are required · site data (supply, earthing, hall temperature, ceiling height).</div>
+</section>
+
+</body>
+</html>
